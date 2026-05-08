@@ -39,7 +39,7 @@
       window.AnimeFlix.startHeroRotation(pool);
       setStatus("", "ok");
     } catch (error) {
-      setStatus(`Hero: ${error.message}`, "error");
+      toast("Hero error", error.message || "Could not load featured anime", "error", 3000);
       els.heroTitle.textContent = "Could not load featured anime";
       els.heroSynopsis.textContent = "Try again in a moment. Rate limits can happen.";
     }
@@ -75,7 +75,7 @@
       listState.page += 1;
     } catch (error) {
       metaEl.textContent = "Error";
-      setStatus(`${listKey}: ${error.message}`, "error");
+      toast(`${listKey} error`, error.message || "Failed to load anime list", "error", 3000);
       setRetry(() => loadList(listKey, container, metaEl, { limit }));
 
       const cached = getCachedListPage(listKey, listState.page);
@@ -156,7 +156,6 @@
       if (error?.name === "AbortError") {
         aborted = true;
       } else {
-        setStatus(`Search: ${error.message}`, "error");
         toast("Search error", error.message || "Request failed", "error", 2600);
         setRetry(() => searchAnime({ reset: false }));
 
@@ -326,7 +325,7 @@
       const lite = animeToLite(data?.data);
 
       if (isAdultAnime(lite)) {
-        setStatus("18+ content hidden in SFW mode.", "error");
+        toast("Content hidden", "18+ content is hidden in SFW mode", "warn", 3000);
         els.detailsTitle.textContent = "Hidden";
         els.detailsSynopsis.textContent = "This title is not shown in SFW mode.";
         return;
@@ -383,7 +382,7 @@
         return;
       }
 
-      setStatus(`Details: ${error.message}`, "error");
+      toast("Details error", error.message || "Could not load anime details", "error", 3000);
       els.detailsTitle.textContent = "Could not load details";
       els.detailsSynopsis.textContent = sanitizeText(error.message) || "Unknown error.";
     }

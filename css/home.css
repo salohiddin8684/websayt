@@ -394,6 +394,17 @@
   backdrop-filter: blur(10px);
   color: color-mix(in srgb, var(--text) 90%, transparent);
   transition: transform .15s ease, background .2s ease, border-color .2s ease;
+  cursor: pointer;
+}
+.card__fav::before{
+  content: "♡";
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+.card__fav.is-on::before{
+  content: "♥";
+  color: var(--accent);
 }
 .card__fav:hover{ transform: scale(1.05); background: color-mix(in srgb, var(--bg) 70%, transparent); border-color: color-mix(in srgb, var(--border) 100%, transparent); }
 .card__fav.is-on{ background: color-mix(in srgb, var(--accent) 26%, transparent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }

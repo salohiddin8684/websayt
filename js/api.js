@@ -99,10 +99,26 @@
       return url;
     }
 
-    if (detailMatch && !isLocal) {
-      addQueryParam(url, "id", detailMatch[1]);
-      addQueryParam(url, "resource", detailMatch[2] || "details");
-      return url;
+    if (detailMatch) {
+      if (isLocal) {
+        // Local development - direct Jikan API
+        const animeId = detailMatch[1];
+        const resource = detailMatch[2];
+        
+        if (resource === "recommendations") {
+          url.pathname = `/anime/${animeId}/recommendations`;
+        } else if (resource === "characters") {
+          url.pathname = `/anime/${animeId}/characters`;
+        } else {
+          url.pathname = `/anime/${animeId}`;
+        }
+        return url;
+      } else {
+        // Netlify function
+        addQueryParam(url, "id", detailMatch[1]);
+        addQueryParam(url, "resource", detailMatch[2] || "details");
+        return url;
+      }
     }
 
     throw new Error(`Unsupported API path: ${normalizedPath}`);
