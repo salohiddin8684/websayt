@@ -190,6 +190,7 @@
   }
 
   function setStatus(message, kind = "info") {
+    if (!els.statusBar) return; // Element removed from HTML
     els.statusBar.textContent = message || "";
     els.statusBar.classList.remove("status--error", "status--ok");
     if (kind === "error") els.statusBar.classList.add("status--error");
