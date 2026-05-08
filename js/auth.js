@@ -13,30 +13,12 @@
     normalizeAnimeCollection,
   } = window.AnimeFlix;
 
-  const AVATARS = [
-    "https://cdn.myanimelist.net/images/characters/9/288765.jpg",
-    "https://cdn.myanimelist.net/images/characters/13/333847.jpg", 
-    "https://cdn.myanimelist.net/images/characters/8/316795.jpg",
-    "https://cdn.myanimelist.net/images/characters/14/357493.jpg",
-    "https://cdn.myanimelist.net/images/characters/7/329725.jpg",
-    "https://cdn.myanimelist.net/images/characters/11/342207.jpg",
-    "https://cdn.myanimelist.net/images/characters/10/335981.jpg",
-    "https://cdn.myanimelist.net/images/characters/12/329726.jpg",
-    "https://cdn.myanimelist.net/images/characters/15/374827.jpg",
-    "https://cdn.myanimelist.net/images/characters/16/385928.jpg",
-    "https://cdn.myanimelist.net/images/characters/9/398529.jpg",
-    "https://cdn.myanimelist.net/images/characters/13/402647.jpg",
-    "https://cdn.myanimelist.net/images/characters/8/415795.jpg",
-    "https://cdn.myanimelist.net/images/characters/14/428493.jpg",
-    "https://cdn.myanimelist.net/images/characters/7/439725.jpg",
-    "https://cdn.myanimelist.net/images/characters/11/445207.jpg",
-    "https://cdn.myanimelist.net/images/characters/10/458981.jpg",
-    "https://cdn.myanimelist.net/images/characters/12/469726.jpg",
-    "https://cdn.myanimelist.net/images/characters/15/478827.jpg",
-    "https://cdn.myanimelist.net/images/characters/16/485928.jpg"
-  ];
+  // Generate avatar URLs using DiceBear API for reliable avatars
+  const AVATARS = Array.from({ length: 20 }, (_, i) => 
+    `https://api.dicebear.com/7.x/avataaars/svg?seed=anime${i + 1}&backgroundColor=b6e3f4,c0aede,d1d4f9`
+  );
 
-  const DEFAULT_AVATAR = AVATARS[0];
+  const DEFAULT_AVATAR = "https://api.dicebear.com/7.x/avataaars/svg?seed=default&backgroundColor=b6e3f4";
 
   function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
