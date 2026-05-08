@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AnimeFlix — Streaming & Tracking</title>
+    <meta name="description" content="Browse top anime, search titles, and save favorites using the Jikan API." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body data-theme="dark">
+    <div class="bg-glow" aria-hidden="true"></div>
+    <div class="toasts" id="toasts" aria-live="polite" aria-relevant="additions"></div>
+
+    <!-- First-load auth gate -->
+    <section class="authGate" id="authGate" aria-hidden="true" hidden>
+      <div class="authGate__space" aria-hidden="true">
+        <div class="authGate__stars authGate__stars--far"></div>
+        <div class="authGate__stars authGate__stars--near"></div>
+        <div class="authGate__shooting authGate__shooting--one"></div>
+        <div class="authGate__shooting authGate__shooting--two"></div>
+        <div class="authGate__shooting authGate__shooting--three"></div>
+        <div class="authGate__float authGate__float--one"></div>
+        <div class="authGate__float authGate__float--two"></div>
+        <div class="authGate__float authGate__float--three"></div>
+      </div>
+
+      <div class="authGate__inner">
+        <section class="authGate__panel" aria-label="Login form">
+          <div class="authGate__panelGlow" aria-hidden="true"></div>
+          <div class="authGate__panelHead">
+            <p class="authGate__eyebrow" id="authGateEyebrow">System Access</p>
+            <h2 class="authGate__title" id="authGateTitle">Kirish</h2>
+            <p class="authGate__copy" id="authGateCopy">
+              Akkauntingizga kiring va quiz galaktikasidagi sarguzashtni davom ettiring.
+            </p>
+          </div>
+
+          <form class="authGate__form" id="authGateForm" novalidate>
+            <label class="authGate__field" for="authGateIdentifier">
+              <span>Username / Email</span>
+              <input
+                id="authGateIdentifier"
+                name="identifier"
+                type="text"
+                autocomplete="username"
+                placeholder="nickname@email.com"
+                spellcheck="false"
+                required
+              />
+            </label>
+
+            <label class="authGate__field" for="authGatePassword">
+              <span>Password</span>
+              <input
+                id="authGatePassword"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Enter your password"
+                required
+              />
+            </label>
+
+            <div class="authGate__meta">
+              <button class="authGate__link" id="authGateForgot" type="button">Parolni unutdingizmi?</button>
+            </div>
+
+            <p class="authGate__error" id="authGateError" role="alert" hidden></p>
+
+            <div class="authGate__actions">
+              <button class="authGate__primary" id="authGateSubmit" type="submit">Kirish</button>
+              <button class="authGate__secondary" id="authGateSecondaryBtn" type="button">
+                Ro'yxatdan o'tish
+              </button>
+            </div>
+
+            <div class="authGate__divider"><span>yoki</span></div>
+
+            <div class="authGate__socials">
+              <button class="authGate__social" id="authGateGoogle" type="button">
+                <span class="authGate__socialIcon authGate__socialIcon--google">G</span>
+                <span>Google</span>
+              </button>
+              <button class="authGate__social" id="authGateTelegram" type="button">
+                <span class="authGate__socialIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="presentation">
+                    <path
+                      d="M21.2 4.6 3.4 11.4c-.8.3-.8 1.4.1 1.6l4.7 1.5 1.8 5.4c.2.7 1.1.9 1.6.3l2.7-3.3 4.9 3.6c.6.4 1.4.1 1.6-.7l2.5-13.6c.2-1-.8-1.8-1.7-1.5Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </span>
+                <span>Telegram</span>
+              </button>
+            </div>
+
+            <p class="authGate__switch">
+              <span id="authGateSwitchText">Akkauntingiz yo'qmi?</span>
+              <button class="authGate__link authGate__link--inline" id="authGateSwitchBtn" type="button">
+                Ro'yxatdan o'tish
+              </button>
+            </p>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <header class="header">
+      <div class="container header__inner">
+        <div class="header__left">
+          <a class="brand" href="#/" id="brandHome" aria-label="AnimeFlix home">
+            <span class="brand__mark">A</span>
+            <span class="brand__name">AnimeFlix</span>
+          </a>
+
+          <nav class="nav" aria-label="Primary navigation">
+            <a class="nav__link" href="#/" id="navHome">Home</a>
+            <a class="nav__link" href="#/favorites" id="navFavorites">Favorites</a>
+          </nav>
+        </div>
+
+        <div class="header__center">
+          <div class="search-bar" role="search">
+            <div class="input input--search">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm11 3-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input id="searchInput" type="search" placeholder="Search anime..." autocomplete="off" spellcheck="false" aria-label="Search anime" />
+              <button class="btn btn--ghost" id="clearSearchBtn" type="button" aria-label="Clear search" hidden>Clear</button>
+            </div>
+            
+            <div class="input input--select" title="Filter by genre">
+              <button class="selectBtn" id="genreBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="selectBtn__label" id="genreBtnLabel">All genres</span>
+              </button>
+              <div class="selectMenu" id="genreMenu" role="listbox" aria-label="Genre filter" hidden></div>
+              <select id="genreSelect" aria-label="Genre filter" class="sr-only" tabindex="-1" aria-hidden="true">
+                <option value="">All genres</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="header__right">
+          <button class="btn btn--icon" id="themeToggleBtn" type="button" aria-label="Toggle theme">
+            <span class="themeToggle__icon" aria-hidden="true">🌙</span>
+          </button>
+
+          <div class="authActions" id="authGuestActions">
+            <button class="btn btn--ghost" id="loginNavBtn" type="button">Kirish</button>
+          </div>
+
+          <div class="authActions authActions--user" id="authUserActions" hidden>
+            <div class="profileMenuWrap">
+              <button
+                class="btn btn--ghost profileTrigger"
+                id="profileBtn"
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded="false"
+              >
+                <div class="profile-circle" id="profileCircle" data-initial="U">
+                  <img id="userAvatarImg" src="https://api.dicebear.com/7.x/adventurer/svg?seed=naruto" alt="User Avatar" />
+                </div>
+              </button>
+              <div class="profileMenu" id="profileMenu" role="menu" hidden>
+                <div class="profileMenu__meta">
+                  <div class="profileMenu__eyebrow">Signed in as</div>
+                  <div class="profileMenu__username" id="profileUsername">username</div>
+                  <div class="profileMenu__email" id="profileEmail">user@example.com</div>
+                </div>
+                <div class="continue-watching-section">
+                  <div class="continue-watching__title">Continue Watching</div>
+                  <div class="continue-watching-grid" id="continueWatchingGrid">
+                    <!-- Continue watching items will be injected by JS -->
+                  </div>
+                </div>
+                <div class="avatar-selector">
+                  <div class="avatar-selector__title">Choose Avatar</div>
+                  <div class="avatar-grid" id="avatarGrid">
+                    <!-- Avatars will be injected by JS -->
+                  </div>
+                </div>
+                <button class="btn btn--ghost profileMenu__logout" id="profileLogoutBtn" type="button" role="menuitem">
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section container" aria-label="Status messages">
+        <div class="status" id="statusBar" role="status" aria-live="polite"></div>
+        <div class="status__actions" id="statusActions" hidden>
+          <button class="btn btn--ghost" id="retryBtn" type="button">Retry</button>
+        </div>
+      </section>
+
+      <!-- HOME VIEW -->
+      <section id="viewHome" data-view="home">
+        <section class="hero" aria-label="Featured anime pagination">
+          <div class="container hero__shell">
+            <div class="hero__stage">
+              <img class="hero__bg" id="heroBgImage" alt="" loading="eager" decoding="async" aria-hidden="true" />
+              <div class="hero__veil" aria-hidden="true"></div>
+
+              <div class="hero__inner">
+            <div class="hero__content">
+              <div class="badge">Featured</div>
+              <h1 class="hero__title" id="heroTitle">Loading…</h1>
+              <div class="hero__meta">
+                <span class="pill" id="heroScore">★ —</span>
+                <span class="muted" id="heroEpisodes">Episodes: —</span>
+              </div>
+              <p class="hero__synopsis" id="heroSynopsis">Fetching a featured anime for you.</p>
+
+              <div class="hero__actions">
+                <button class="btn btn--primary" id="heroDetailsBtn" type="button">Open details</button>
+                <button class="btn btn--secondary" id="heroFavBtn" type="button">Add to favorites</button>
+              </div>
+            </div>
+
+            <div class="hero__poster">
+              <div class="poster-frame">
+                <img id="heroImage" alt="Featured anime poster" loading="eager" decoding="async" />
+                <div class="poster-frame__overlay" aria-hidden="true"></div>
+              </div>
+            </div>
+              </div>
+
+              <div class="hero__pagination" aria-label="Featured anime pages">
+                <button class="heroPager__button" id="heroPrevBtn" type="button" aria-label="Previous featured anime">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M15 18 9 12l6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <div class="heroPager__status" id="heroPageIndex" aria-live="polite">00 / 00</div>
+                <div class="heroPager__dots" id="heroDots" aria-label="Featured anime pagination"></div>
+                <button class="heroPager__button" id="heroNextBtn" type="button" aria-label="Next featured anime">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section container" aria-label="Continue watching" id="continueSection" hidden>
+          <div class="section__head">
+            <h2 class="section__title">Continue Watching</h2>
+            <div class="section__actions">
+              <button class="btn btn--ghost" id="clearContinueBtn" type="button">Clear</button>
+            </div>
+          </div>
+          <div class="slider" id="continueSlider"></div>
+        </section>
+
+        <section class="section container" aria-label="Trending anime">
+          <div class="section__head">
+            <h2 class="section__title">Trending</h2>
+            <div class="section__actions">
+              <span class="muted" id="trendingMeta"></span>
+              <button class="btn btn--ghost btn--sm" id="trendingMoreBtn" type="button">Load more</button>
+            </div>
+          </div>
+          <div class="slider" id="trendingSlider"></div>
+          <div class="sentinel" id="trendingSentinel" aria-hidden="true"></div>
+        </section>
+
+        <section class="section container" aria-label="Top rated anime">
+          <div class="section__head">
+            <h2 class="section__title">Top Rated</h2>
+            <div class="section__actions">
+              <span class="muted" id="topMeta"></span>
+              <button class="btn btn--ghost btn--sm" id="topMoreBtn" type="button">Load more</button>
+            </div>
+          </div>
+          <div class="slider" id="topSlider"></div>
+          <div class="sentinel" id="topSentinel" aria-hidden="true"></div>
+        </section>
+
+        <section class="section container" aria-label="Popular anime">
+          <div class="section__head">
+            <h2 class="section__title">Popular</h2>
+            <div class="section__actions">
+              <span class="muted" id="popularMeta"></span>
+              <button class="btn btn--ghost btn--sm" id="popularMoreBtn" type="button">Load more</button>
+            </div>
+          </div>
+          <div class="slider" id="popularSlider"></div>
+          <div class="sentinel" id="popularSentinel" aria-hidden="true"></div>
+        </section>
+      </section>
+
+      <!-- SEARCH VIEW -->
+      <section class="section container" aria-label="Search results" id="searchSection" hidden>
+        <div class="section__head">
+          <h2 class="section__title">Search</h2>
+          <div class="section__actions">
+            <span class="muted" id="searchCount"></span>
+            <button class="btn btn--ghost btn--sm" id="searchMoreBtn" type="button">Load more</button>
+          </div>
+        </div>
+        <div class="grid" id="searchGrid"></div>
+        <div class="sentinel" id="searchSentinel" aria-hidden="true"></div>
+      </section>
+
+      <!-- LOGIN VIEW -->
+      <section class="section container authPage" id="viewLogin" data-view="login" hidden>
+        <div class="authShell">
+          <div class="authPanel authPanel--highlight">
+            <div class="badge">Account</div>
+            <h1 class="authPanel__title">Welcome back to AnimeFlix</h1>
+            <p class="authPanel__text">
+              Sign in to sync favorites, continue watching, and your theme across devices.
+            </p>
+            <div class="authFeatureList" aria-hidden="true">
+              <div class="authFeature">
+                <span class="authFeature__label">Favorites</span>
+                <span class="authFeature__value">Saved to your account</span>
+              </div>
+              <div class="authFeature">
+                <span class="authFeature__label">Continue Watching</span>
+                <span class="authFeature__value">Resume instantly</span>
+              </div>
+              <div class="authFeature">
+                <span class="authFeature__label">Theme</span>
+                <span class="authFeature__value">Your preference follows you</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="authCard">
+            <div class="authCard__head">
+              <div class="badge">Login</div>
+              <h2 class="authCard__title">Sign In</h2>
+              <p class="authCard__text">Use your email or username to continue.</p>
+            </div>
+
+            <form class="authForm" id="loginForm" novalidate>
+              <label class="formField" for="loginIdentifier">
+                <span class="formField__label">Email or Username</span>
+                <input
+                  class="formField__input"
+                  id="loginIdentifier"
+                  name="identifier"
+                  type="text"
+                  autocomplete="username"
+                  placeholder="Enter your email or username"
+                  required
+                />
+              </label>
+
+              <label class="formField" for="loginPassword">
+                <span class="formField__label">Password</span>
+                <input
+                  class="formField__input"
+                  id="loginPassword"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  placeholder="Enter your password"
+                  required
+                />
+              </label>
+
+              <button class="btn btn--primary authForm__submit" id="loginSubmitBtn" type="submit">Login</button>
+            </form>
+
+            <p class="authSwitch">
+              Do not have an account?
+              <a class="authSwitch__link" href="#/signup" id="goToSignupLink">Create one</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SIGN UP VIEW -->
+      <section class="section container authPage" id="viewSignup" data-view="signup" hidden>
+        <div class="authShell">
+          <div class="authPanel">
+            <div class="badge">Create Account</div>
+            <h1 class="authPanel__title">Build your personal anime space</h1>
+            <p class="authPanel__text">
+              Register once and keep your saved shows, recent titles, and theme preference in sync.
+            </p>
+            <div class="authPanel__glow" aria-hidden="true"></div>
+          </div>
+
+          <div class="authCard">
+            <div class="authCard__head">
+              <div class="badge">Sign Up</div>
+              <h2 class="authCard__title">Create Account</h2>
+              <p class="authCard__text">Fill in your details to start saving progress.</p>
+            </div>
+
+            <form class="authForm" id="signupForm" novalidate>
+              <label class="formField" for="signupFullName">
+                <span class="formField__label">Full Name</span>
+                <input
+                  class="formField__input"
+                  id="signupFullName"
+                  name="fullName"
+                  type="text"
+                  autocomplete="name"
+                  placeholder="Enter your full name"
+                  required
+                />
+              </label>
+
+              <label class="formField" for="signupUsername">
+                <span class="formField__label">Username</span>
+                <input
+                  class="formField__input"
+                  id="signupUsername"
+                  name="username"
+                  type="text"
+                  autocomplete="username"
+                  placeholder="Choose a username"
+                  required
+                />
+              </label>
+
+              <label class="formField" for="signupEmail">
+                <span class="formField__label">Email</span>
+                <input
+                  class="formField__input"
+                  id="signupEmail"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  placeholder="Enter your email"
+                  required
+                />
+              </label>
+
+              <label class="formField" for="signupPassword">
+                <span class="formField__label">Password</span>
+                <input
+                  class="formField__input"
+                  id="signupPassword"
+                  name="password"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Minimum 6 characters"
+                  required
+                />
+              </label>
+
+              <label class="formField" for="signupConfirmPassword">
+                <span class="formField__label">Confirm Password</span>
+                <input
+                  class="formField__input"
+                  id="signupConfirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Confirm your password"
+                  required
+                />
+              </label>
+
+              <button class="btn btn--primary authForm__submit" id="signupSubmitBtn" type="submit">Create Account</button>
+            </form>
+
+            <p class="authSwitch">
+              Already have an account?
+              <a class="authSwitch__link" href="#/login" id="goToLoginLink">Login</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DETAILS VIEW -->
+      <section class="section container" id="viewDetails" data-view="details" hidden>
+        <div class="details">
+          <button class="btn btn--ghost details__back" id="detailsBackBtn" type="button">← Back</button>
+          <div class="details__layout">
+            <div class="details__poster">
+              <div class="poster-frame poster-frame--details">
+                <img id="detailsImage" alt="Anime poster" loading="eager" decoding="async" />
+                <div class="poster-frame__overlay" aria-hidden="true"></div>
+              </div>
+            </div>
+            <div class="details__content">
+              <h2 class="details__title" id="detailsTitle">Loading…</h2>
+              <div class="details__meta">
+                <span class="pill" id="detailsScore">★ —</span>
+                <span class="pill pill--ghost" id="detailsEpisodes">Episodes: —</span>
+              </div>
+              <div class="chips" id="detailsGenres"></div>
+              <p class="details__synopsis" id="detailsSynopsis"></p>
+              <div class="details__actions">
+                <button class="btn btn--secondary" id="detailsFavBtn" type="button">Add to favorites</button>
+                <a class="btn btn--ghost" id="detailsMalLink" href="#" target="_blank" rel="noreferrer">MyAnimeList</a>
+                <a class="btn btn--secondary" id="detailsWatchBtn" href="#" target="_blank" rel="noreferrer">Watch</a>
+                <a class="btn btn--primary" id="detailsTrailerBtn" href="#" target="_blank" rel="noreferrer" hidden>Watch trailer</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="details__extras">
+            <section class="section" aria-label="Recommendations">
+              <div class="section__head">
+                <h3 class="section__title">Recommendations</h3>
+                <div class="section__actions">
+                  <span class="muted" id="recsMeta"></span>
+                </div>
+              </div>
+              <div class="grid grid--tight" id="recsGrid"></div>
+            </section>
+
+            <section class="section" aria-label="Characters">
+              <div class="section__head">
+                <h3 class="section__title">Characters</h3>
+                <div class="section__actions">
+                  <span class="muted" id="charsMeta"></span>
+                </div>
+              </div>
+              <div class="people" id="charsList"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAVORITES VIEW -->
+      <section class="section container" id="viewFavorites" data-view="favorites" hidden>
+        <div class="section__head">
+          <h2 class="section__title">Your Favorites</h2>
+          <div class="section__actions">
+            <button class="btn btn--ghost" id="clearFavoritesBtn" type="button">Clear favorites</button>
+          </div>
+        </div>
+        <div class="grid" id="favoritesGrid"></div>
+        <div class="empty" id="favoritesEmptyPage" hidden>
+          <div class="empty__title">No favorites yet</div>
+          <div class="empty__text">Browse an anime and tap the heart to save it here.</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <div class="muted">
+          Data via Jikan API (unofficial MyAnimeList API). Built with HTML/CSS/JS.
+        </div>
+      </div>
+    </footer>
+
+    <script src="js/config.js" defer></script>
+    <script src="js/core.js" defer></script>
+    <script src="js/api.js" defer></script>
+    <script src="js/storage.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="login.js" defer></script>
+    <script src="js/render.js" defer></script>
+    <script src="js/app.js" defer></script>
+    <script defer>
+      // boot
+      window.addEventListener("load", () => {
+        if (window.AnimeFlix && typeof window.AnimeFlix.init === 'function') {
+          window.AnimeFlix.init();
+        } else {
+          console.error("AnimeFlix core failed to load.");
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+/* Base + background */
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1000px 620px at 12% 6%, rgba(124,92,255,.18), transparent 70%),
+    radial-gradient(1100px 720px at 88% 0%, rgba(59,130,246,.14), transparent 72%),
+    radial-gradient(1200px 900px at 50% 100%, rgba(2,6,23,.55), transparent 70%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+.bg-glow{
+  position: fixed;
+  inset: -200px;
+  background:
+    radial-gradient(700px 500px at 20% 20%, rgba(124,92,255,.12), transparent 60%),
+    radial-gradient(700px 500px at 70% 60%, rgba(59,130,246,.10), transparent 60%);
+  filter: blur(26px);
+  opacity: .72;
+  pointer-events: none;
+  z-index: -1;
+}
+
+a{ color: inherit; text-decoration: none; }
+img{ max-width:100%; display:block; }
+
+.container{
+  width: min(var(--max), calc(100% - 32px));
+  margin-inline: auto;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+

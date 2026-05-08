@@ -1,0 +1,53 @@
+<header class="header">
+  <div class="container header__inner">
+    <a class="brand" href="#/" id="brandHome" aria-label="AnimeFlix home">
+      <span class="brand__mark">A</span>
+      <span class="brand__name">AnimeFlix</span>
+    </a>
+
+    <nav class="nav" aria-label="Primary navigation">
+      <a class="nav__link" href="#/" id="navHome">Home</a>
+      <a class="nav__link" href="#/favorites" id="navFavorites">Favorites</a>
+    </nav>
+
+    <div class="header__controls">
+      <div class="input input--search" role="search">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm11 3-6-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search anime (e.g. Naruto, One Piece)…"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Search anime"
+        />
+        <button class="btn btn--ghost" id="clearSearchBtn" type="button" aria-label="Clear search">Clear</button>
+      </div>
+
+      <div class="input input--select" title="Bonus: filter by genre">
+        <button class="selectBtn" id="genreBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+          <span class="selectBtn__label" id="genreBtnLabel">All genres</span>
+        </button>
+        <div class="selectMenu" id="genreMenu" role="listbox" aria-label="Genre filter" hidden></div>
+        <select id="genreSelect" aria-label="Genre filter" class="sr-only" tabindex="-1" aria-hidden="true">
+          <option value="">All genres</option>
+        </select>
+      </div>
+
+      <button class="btn btn--ghost" id="themeToggleBtn" type="button" aria-label="Toggle theme">
+        <span class="themeToggle__icon" aria-hidden="true">🌙</span>
+        <span class="themeToggle__text">Dark</span>
+      </button>
+    </div>
+  </div>
+</header>
+

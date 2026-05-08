@@ -1,0 +1,136 @@
+/**
+ * AnimeFlix Modern Responsive System
+ */
+
+/* --- Katta Ekranlar va TV uchun (Large Screens & TV) --- */
+@media (min-width: 1800px) {
+  :root { --container-max: 1700px; }
+  body { font-size: 18px; }
+  .grid { grid-template-columns: repeat(7, 1fr); gap: 30px; }
+  .grid--tight { grid-template-columns: repeat(8, 1fr); }
+  .hero__title { font-size: 4rem; }
+  .card__title { font-size: 1.1rem; }
+}
+
+@media (min-width: 2500px) {
+  :root { --container-max: 2200px; }
+  .grid { grid-template-columns: repeat(9, 1fr); }
+}
+
+/* --- Notebook va Monitorlar (Desktop) --- */
+@media (max-width: 1440px) {
+  .grid { grid-template-columns: repeat(6, 1fr); }
+}
+
+@media (max-width: 1200px) {
+  .grid { grid-template-columns: repeat(5, 1fr); }
+  .nav__link { padding: 8px 10px; font-size: 12px; }
+}
+
+/* --- Planshetlar (Tablets) --- */
+@media (max-width: 992px) {
+  .brand__name, .nav { display: none; } /* Navigatsiyani yashirib, qidiruvga joy ochamiz */
+  .header__center { max-width: 450px; }
+  .grid { grid-template-columns: repeat(4, 1fr); gap: 15px; }
+  
+  .hero__stage { min-height: auto; }
+  .hero__inner {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 34px 24px 94px;
+  }
+  .hero__content { max-width: 680px; padding: 0; margin: 0 auto; align-items: center; }
+  .hero__poster { width: min(280px, 54vw); opacity: 1; pointer-events: auto; transform: none; margin: 8px auto 0; }
+  .hero .poster-frame { aspect-ratio: 10/13; }
+  .hero__stage:hover .hero__content,
+  .hero__stage:focus-within .hero__content{ transform: none; }
+  
+  .details__layout { grid-template-columns: 1fr; }
+  .details__poster { max-width: 300px; margin: 0 auto; }
+  .details__content { text-align: center; align-items: center; }
+  .chips { justify-content: center; }
+}
+
+/* --- Kichik Planshetlar va Katta Telefonlar --- */
+@media (max-width: 768px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+  .header__inner { gap: 10px; }
+  .search-bar { border-radius: 10px; }
+  .input--select { min-width: 100px; padding: 6px; }
+  .selectBtn__label { font-size: 12px; }
+  
+  .authShell { grid-template-columns: 1fr; }
+  .authPanel { padding: 30px 20px; }
+}
+
+/* --- Mobil Qurilmalar (Mobile Phones) --- */
+@media (max-width: 580px) {
+  .header { padding-top: 5px; }
+  .header__inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 15px;
+  }
+
+  .header__left { order: 1; flex: 1; }
+  .header__right { order: 2; flex-shrink: 0; gap: 10px; }
+  .header__center { order: 3; width: 100%; margin-top: 5px; }
+
+  .brand__name { display: none; }
+  .profile-name-text { display: none; } /* Mobil qurilmada faqat dumaloq rasm qoladi */
+  .profileTrigger { min-width: auto; padding: 0; background: none; border: none; }
+
+  .search-bar { width: 100%; }
+  .input--select { min-width: 90px; }
+
+  .grid { 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 12px; 
+    padding: 0 10px;
+  }
+
+  .hero__title { font-size: 1.8rem; }
+  .hero__synopsis { -webkit-line-clamp: 3; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+  .hero__inner { padding: 26px 18px 100px; }
+  .hero__poster { width: min(220px, 62vw); }
+  .hero__pagination {
+    left: 14px;
+    right: 14px;
+    bottom: 16px;
+    max-width: none;
+    justify-content: center;
+  }
+  .heroPager__status { min-width: 58px; }
+  .heroPager__dots { max-width: 112px; }
+  
+  .card__body { padding: 8px; }
+  .card__title { font-size: 13px; line-height: 1.3; height: 34px; }
+  
+  .section__head { flex-direction: column; align-items: flex-start; gap: 8px; }
+  
+  .btn { width: 100%; justify-content: center; padding: 12px; }
+  .hero__actions { width: 100%; flex-direction: column; }
+  
+  .people { grid-template-columns: 1fr; }
+  
+  /* Toasts top mobile fix */
+  .toasts { top: auto; bottom: 20px; left: 10px; right: 10px; width: calc(100% - 20px); }
+}
+
+@media (hover: none) {
+  .hero__bg{
+    filter: blur(5px) brightness(.46) saturate(1.1);
+    transform: scale(1.05);
+  }
+  .hero__poster{
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+  .hero__stage:hover .hero__content,
+  .hero__stage:focus-within .hero__content{
+    transform: none;
+  }
+}

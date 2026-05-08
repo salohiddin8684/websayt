@@ -1,0 +1,164 @@
+<main>
+  <section class="section container" aria-label="Status messages">
+    <div class="status" id="statusBar" role="status" aria-live="polite"></div>
+    <div class="status__actions" id="statusActions" hidden>
+      <button class="btn btn--ghost" id="retryBtn" type="button">Retry</button>
+    </div>
+  </section>
+
+  <!-- HOME VIEW -->
+  <section id="viewHome" data-view="home">
+    <section class="hero" aria-label="Featured anime">
+      <div class="container hero__inner">
+        <div class="hero__content">
+          <div class="badge">Featured</div>
+          <h1 class="hero__title" id="heroTitle">Loading…</h1>
+          <div class="hero__meta">
+            <span class="pill" id="heroScore">★ —</span>
+            <span class="muted" id="heroEpisodes">Episodes: —</span>
+          </div>
+          <p class="hero__synopsis" id="heroSynopsis">Fetching a featured anime for you.</p>
+
+          <div class="hero__actions">
+            <button class="btn btn--primary" id="heroDetailsBtn" type="button">Open details</button>
+            <button class="btn btn--secondary" id="heroFavBtn" type="button">Add to favorites</button>
+          </div>
+        </div>
+
+        <div class="hero__poster">
+          <div class="poster-frame">
+            <img id="heroImage" alt="Featured anime poster" loading="eager" decoding="async" />
+            <div class="poster-frame__overlay" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" aria-label="Continue watching" id="continueSection" hidden>
+      <div class="section__head">
+        <h2 class="section__title">Continue Watching</h2>
+        <div class="section__actions">
+          <button class="btn btn--ghost" id="clearContinueBtn" type="button">Clear</button>
+        </div>
+      </div>
+      <div class="slider" id="continueSlider"></div>
+    </section>
+
+    <section class="section container" aria-label="Trending anime">
+      <div class="section__head">
+        <h2 class="section__title">Trending</h2>
+        <div class="section__actions">
+          <span class="muted" id="trendingMeta"></span>
+          <button class="btn btn--ghost btn--sm" id="trendingMoreBtn" type="button">Load more</button>
+        </div>
+      </div>
+      <div class="slider" id="trendingSlider"></div>
+      <div class="sentinel" id="trendingSentinel" aria-hidden="true"></div>
+    </section>
+
+    <section class="section container" aria-label="Top rated anime">
+      <div class="section__head">
+        <h2 class="section__title">Top Rated</h2>
+        <div class="section__actions">
+          <span class="muted" id="topMeta"></span>
+          <button class="btn btn--ghost btn--sm" id="topMoreBtn" type="button">Load more</button>
+        </div>
+      </div>
+      <div class="slider" id="topSlider"></div>
+      <div class="sentinel" id="topSentinel" aria-hidden="true"></div>
+    </section>
+
+    <section class="section container" aria-label="Popular anime">
+      <div class="section__head">
+        <h2 class="section__title">Popular</h2>
+        <div class="section__actions">
+          <span class="muted" id="popularMeta"></span>
+          <button class="btn btn--ghost btn--sm" id="popularMoreBtn" type="button">Load more</button>
+        </div>
+      </div>
+      <div class="slider" id="popularSlider"></div>
+      <div class="sentinel" id="popularSentinel" aria-hidden="true"></div>
+    </section>
+  </section>
+
+  <!-- SEARCH VIEW -->
+  <section class="section container" aria-label="Search results" id="searchSection" hidden>
+    <div class="section__head">
+      <h2 class="section__title">Search</h2>
+      <div class="section__actions">
+        <span class="muted" id="searchCount"></span>
+        <button class="btn btn--ghost btn--sm" id="searchMoreBtn" type="button">Load more</button>
+      </div>
+    </div>
+    <div class="grid" id="searchGrid"></div>
+    <div class="sentinel" id="searchSentinel" aria-hidden="true"></div>
+  </section>
+
+  <!-- DETAILS VIEW -->
+  <section class="section container" id="viewDetails" data-view="details" hidden>
+    <div class="details">
+      <button class="btn btn--ghost details__back" id="detailsBackBtn" type="button">← Back</button>
+      <div class="details__layout">
+        <div class="details__poster">
+          <div class="poster-frame poster-frame--details">
+            <img id="detailsImage" alt="Anime poster" loading="eager" decoding="async" />
+            <div class="poster-frame__overlay" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="details__content">
+          <h2 class="details__title" id="detailsTitle">Loading…</h2>
+          <div class="details__meta">
+            <span class="pill" id="detailsScore">★ —</span>
+            <span class="pill pill--ghost" id="detailsEpisodes">Episodes: —</span>
+          </div>
+          <div class="chips" id="detailsGenres"></div>
+          <p class="details__synopsis" id="detailsSynopsis"></p>
+          <div class="details__actions">
+            <button class="btn btn--secondary" id="detailsFavBtn" type="button">Add to favorites</button>
+            <a class="btn btn--ghost" id="detailsMalLink" href="#" target="_blank" rel="noreferrer">MyAnimeList</a>
+            <a class="btn btn--secondary" id="detailsWatchBtn" href="#" target="_blank" rel="noreferrer">Watch</a>
+            <a class="btn btn--primary" id="detailsTrailerBtn" href="#" target="_blank" rel="noreferrer" hidden>Watch trailer</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="details__extras">
+        <section class="section" aria-label="Recommendations">
+          <div class="section__head">
+            <h3 class="section__title">Recommendations</h3>
+            <div class="section__actions">
+              <span class="muted" id="recsMeta"></span>
+            </div>
+          </div>
+          <div class="grid grid--tight" id="recsGrid"></div>
+        </section>
+
+        <section class="section" aria-label="Characters">
+          <div class="section__head">
+            <h3 class="section__title">Characters</h3>
+            <div class="section__actions">
+              <span class="muted" id="charsMeta"></span>
+            </div>
+          </div>
+          <div class="people" id="charsList"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAVORITES VIEW -->
+  <section class="section container" id="viewFavorites" data-view="favorites" hidden>
+    <div class="section__head">
+      <h2 class="section__title">Your Favorites</h2>
+      <div class="section__actions">
+        <button class="btn btn--ghost" id="clearFavoritesBtn" type="button">Clear favorites</button>
+      </div>
+    </div>
+    <div class="grid" id="favoritesGrid"></div>
+    <div class="empty" id="favoritesEmptyPage" hidden>
+      <div class="empty__title">No favorites yet</div>
+      <div class="empty__text">Browse an anime and tap the heart to save it here.</div>
+    </div>
+  </section>
+</main>
+
