@@ -7,7 +7,7 @@
   const requestGate = {
     chain: Promise.resolve(),
     lastAt: 0,
-    minGapMs: 900,
+    minGapMs: 1200,
   };
 
   async function scheduleRequest() {

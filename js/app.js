@@ -696,12 +696,17 @@
     loadGenres();
 
     const sessionPromise = window.AnimeFlix.restoreSession();
-    const contentPromise = Promise.all([
-      loadHero(),
-      loadList("trending", els.trendingSlider, els.trendingMeta),
-      loadList("top", els.topSlider, els.topMeta),
-      loadList("popular", els.popularSlider, els.popularMeta),
-    ]);
+    
+    // Load hero first, then stagger list loads to avoid rate limits
+    const contentPromise = (async () => {
+      await loadHero();
+      await sleep(800);
+      await loadList("trending", els.trendingSlider, els.trendingMeta);
+      await sleep(800);
+      await loadList("top", els.topSlider, els.topMeta);
+      await sleep(800);
+      await loadList("popular", els.popularSlider, els.popularMeta);
+    })();
 
     await sessionPromise;
     await onRouteChange();
