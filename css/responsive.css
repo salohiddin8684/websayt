@@ -121,11 +121,11 @@
 
 @media (hover: none) {
   .hero__bg{
-    filter: blur(5px) brightness(.46) saturate(1.1);
-    transform: scale(1.05);
+    filter: blur(3px) brightness(.52) saturate(1.15) contrast(1.03);
+    transform: scale(1.03);
   }
+  .hero__veil{ opacity: .94; }
   .hero__poster{
-    opacity: 1;
     pointer-events: auto;
     transform: none;
   }
