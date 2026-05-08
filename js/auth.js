@@ -171,7 +171,7 @@
         <img src="${anime.image || ''}" alt="${anime.title}" class="continue-watching-item__img">
         <div class="continue-watching-item__info">
           <div class="continue-watching-item__title">${anime.title}</div>
-          <div class="continue-watching-item__episodes">${anime.episodes ? `${anime.episodes} ep` : '--'}</div>
+          <div class="continue-watching-item__episodes">${anime.episodes ? `${anime.episodes} ep` : 'N/A'}</div>
         </div>
       `;
       item.addEventListener("click", () => {
@@ -192,7 +192,12 @@
     AVATARS.forEach(url => {
       const item = document.createElement("div");
       item.className = `avatar-item ${url === current ? 'is-active' : ''}`;
-      item.innerHTML = `<img src="${url}" alt="Avatar Option">`;
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = "Avatar Option";
+      img.loading = "lazy";
+      img.onerror = () => { img.style.display = 'none'; item.classList.add('avatar-error'); };
+      item.appendChild(img);
       item.addEventListener("click", () => {
         localStorage.setItem('animeflix:userAvatar', url);
         updateAuthUI();

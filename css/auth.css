@@ -262,6 +262,19 @@
   object-fit: cover;
 }
 
+.avatar-item.avatar-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+}
+
+.avatar-item.avatar-error::before {
+  content: "👤";
+  font-size: 24px;
+  opacity: 0.6;
+}
+
 .profileMenu__logout {
   width: 100%;
   justify-content: center;
