@@ -33,8 +33,6 @@
     // global
     statusBar: $("statusBar"),
     toasts: $("toasts"),
-    statusActions: $("statusActions"),
-    retryBtn: $("retryBtn"),
 
     // nav
     navHome: $("navHome"),
@@ -200,9 +198,6 @@
 
   function setRetry(action) {
     state.lastRetry = typeof action === "function" ? action : null;
-    const show = !!state.lastRetry;
-    els.statusActions.hidden = !show;
-    els.retryBtn.disabled = !show;
   }
 
   function toast(title, text = "", kind = "ok", ttlMs = 2200) {

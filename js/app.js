@@ -7,7 +7,6 @@
     state,
     controllers,
     setStatus,
-    setRetry,
     toast,
     debounce,
     sanitizeText,
@@ -51,7 +50,6 @@
 
     listState.loading = true;
     metaEl.textContent = `Loading page ${listState.page}...`;
-    setRetry(null);
 
     if (container.children.length === 0) {
       window.AnimeFlix.renderAnime(container, [], { skeletonCount: 8, layout: "slider" });
@@ -76,7 +74,6 @@
     } catch (error) {
       metaEl.textContent = "Error";
       toast(`${listKey} error`, error.message || "Failed to load anime list", "error", 3000);
-      setRetry(() => loadList(listKey, container, metaEl, { limit }));
 
       const cached = getCachedListPage(listKey, listState.page);
       if (cached?.items?.length) {
@@ -86,7 +83,6 @@
         metaEl.textContent = `Page ${listState.page} (cached)${listState.hasNext ? "" : " • End"}`;
         listState.page += 1;
         setStatus(`${listKey}: showing cached results`, "ok");
-        setRetry(null);
       }
     } finally {
       listState.loading = false;
@@ -105,7 +101,6 @@
     setSearchMode(true);
     els.searchSection.hidden = false;
     setStatus(query ? `Searching "${query}"...` : "Filtering by genre...");
-    setRetry(null);
 
     let aborted = false;
 
@@ -157,7 +152,6 @@
         aborted = true;
       } else {
         toast("Search error", error.message || "Request failed", "error", 2600);
-        setRetry(() => searchAnime({ reset: false }));
 
         const cached = getCachedSearchPage({ q: query, genreId: state.genreId, page: searchState.page });
         if (cached?.items?.length) {
@@ -168,14 +162,12 @@
           els.searchCount.textContent = searchState.total ? `${searchState.total} results (cached)` : "Cached results";
           searchState.page += 1;
           setStatus("Search: showing cached results", "ok");
-          setRetry(null);
         }
       }
     } finally {
       searchState.loading = false;
       if (aborted) {
         setStatus("");
-        setRetry(null);
       }
     }
   }
@@ -198,7 +190,6 @@
 
     setSearchMode(false);
     setStatus("");
-    setRetry(null);
   }
 
   function setDetailsSkeleton() {
@@ -566,7 +557,6 @@
 
   function attachEvents() {
     els.themeToggleBtn.addEventListener("click", window.AnimeFlix.toggleTheme);
-    els.retryBtn.addEventListener("click", () => state.lastRetry && state.lastRetry());
     els.loginNavBtn.addEventListener("click", () => window.AnimeFlix.openAuthGate?.({ mode: "login" }));
     els.signupNavBtn?.addEventListener("click", () => window.AnimeFlix.openAuthGate?.({ mode: "signup" }));
 
