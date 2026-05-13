@@ -85,9 +85,7 @@
   top: calc(100% + 12px);
   right: 0;
   width: 320px;
-  max-height: 80vh;
-  overflow-y: auto;
-  background: linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--surface) 95%, #000));
+  background: linear-gradient(180deg, var(--surface), var(--surface));
   border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   border-radius: 12px;
   padding: 12px;
@@ -138,11 +136,9 @@
 .continue-watching-section {
   margin-bottom: 16px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
   border-radius: 8px;
   border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 .continue-watching__title {

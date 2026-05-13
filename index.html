@@ -9,6 +9,7 @@
     <link rel="icon" href="favicon.ico" sizes="32x32" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="login.css" />
+    <link rel="stylesheet" href="css/profile.css" />
   </head>
   <body data-theme="dark">
     <div class="bg-glow" aria-hidden="true"></div>
@@ -159,34 +160,62 @@
                 class="btn btn--ghost profileTrigger"
                 id="profileBtn"
                 type="button"
-                aria-haspopup="menu"
+                aria-haspopup="dialog"
                 aria-expanded="false"
               >
                 <div class="profile-circle" id="profileCircle" data-initial="U">
                   <img id="userAvatarImg" src="https://api.dicebear.com/7.x/adventurer/svg?seed=naruto" alt="User Avatar" />
                 </div>
+                <span class="profileTrigger__chevron" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="presentation">
+                    <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
               </button>
-              <div class="profileMenu" id="profileMenu" role="menu" hidden>
-                <div class="profileMenu__meta">
-                  <div class="profileMenu__eyebrow">Signed in as</div>
-                  <div class="profileMenu__username" id="profileUsername">username</div>
-                  <div class="profileMenu__email" id="profileEmail">user@example.com</div>
-                </div>
-                <div class="continue-watching-section">
-                  <div class="continue-watching__title">Continue Watching</div>
-                  <div class="continue-watching-grid" id="continueWatchingGrid">
-                    <!-- Continue watching items will be injected by JS -->
+              <div class="profileMenu" id="profileMenu" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle" hidden>
+                <div class="profileMenu__backdrop" id="profileBackdrop" aria-hidden="true"></div>
+                <section class="profileModal" role="document">
+                  <div class="profileModal__header">
+                    <div class="profileModal__avatarWrap" aria-hidden="true">
+                      <img id="profilePreviewImg" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default&backgroundColor=b6e3f4" alt="" />
+                      <span id="profilePreviewInitial">U</span>
+                    </div>
+                    <div class="profileModal__identity">
+                      <p class="profileModal__eyebrow">AnimeFlix profile</p>
+                      <h2 class="profileModal__username" id="profileModalTitle">
+                        <span id="profileUsername">username</span>
+                      </h2>
+                      <p class="profileModal__email" id="profileEmail">user@example.com</p>
+                    </div>
+                    <button class="profileModal__iconBtn" id="profileCloseBtn" type="button" aria-label="Close profile">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+                      </svg>
+                    </button>
                   </div>
-                </div>
-                <div class="avatar-selector">
-                  <div class="avatar-selector__title">Choose Avatar</div>
-                  <div class="avatar-grid" id="avatarGrid">
-                    <!-- Avatars will be injected by JS -->
+
+                  <div class="profileModal__divider" aria-hidden="true"></div>
+
+                  <div class="profileModal__sectionHead">
+                    <div>
+                      <p class="profileModal__sectionLabel">Avatar collection</p>
+                      <h3>Choose your look</h3>
+                    </div>
+                    <span class="profileModal__selection" id="profileSelectionStatus">Selected</span>
                   </div>
-                </div>
-                <button class="btn btn--ghost profileMenu__logout" id="profileLogoutBtn" type="button" role="menuitem">
-                  Logout
-                </button>
+
+                  <div class="avatar-selector">
+                    <div class="avatar-grid" id="avatarGrid" role="radiogroup" aria-label="Choose profile avatar">
+                      <!-- Avatars will be injected by JS -->
+                    </div>
+                  </div>
+
+                  <div class="profileModal__actions">
+                    <button class="profileModal__button profileModal__button--ghost" id="profileCancelBtn" type="button">Cancel</button>
+                    <button class="profileModal__button profileModal__button--primary" id="profileSaveBtn" type="button">Save avatar</button>
+                    <button class="profileModal__logout" id="profileLogoutBtn" type="button">Logout</button>
+                  </div>
+                </section>
               </div>
             </div>
           </div>
@@ -552,6 +581,9 @@
     <script src="js/core.js" defer></script>
     <script src="js/api.js" defer></script>
     <script src="js/storage.js" defer></script>
+    <script src="js/components/AvatarGrid.js" defer></script>
+    <script src="js/components/UserProfileButton.js" defer></script>
+    <script src="js/components/ProfileModal.js" defer></script>
     <script src="js/auth.js" defer></script>
     <script src="login.js" defer></script>
     <script src="js/render.js" defer></script>

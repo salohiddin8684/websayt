@@ -9,6 +9,7 @@
     setStatus,
     toast,
     debounce,
+    sleep,
     sanitizeText,
     formatScore,
     animeToLite,

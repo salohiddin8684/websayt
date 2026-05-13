@@ -2,7 +2,7 @@
 .header{
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 40;
   backdrop-filter: blur(18px);
   background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 86%, transparent), color-mix(in srgb, var(--bg) 72%, transparent));
   border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);

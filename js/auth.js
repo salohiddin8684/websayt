@@ -13,12 +13,10 @@
     normalizeAnimeCollection,
   } = window.AnimeFlix;
 
-  // Generate avatar URLs using DiceBear API for reliable avatars
-  const AVATARS = Array.from({ length: 20 }, (_, i) => 
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=anime${i + 1}&backgroundColor=b6e3f4,c0aede,d1d4f9`
-  );
-
-  const DEFAULT_AVATAR = "https://api.dicebear.com/7.x/avataaars/svg?seed=default&backgroundColor=b6e3f4";
+  const AVATAR_KEY = "animeflix:userAvatar";
+  const DEFAULT_AVATAR =
+    window.AnimeFlix.DEFAULT_PROFILE_AVATAR ||
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=animeflix-default&backgroundColor=b6e3f4";
 
   function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
@@ -100,32 +98,27 @@
 
     if (!authed) {
       closeProfileMenu();
-      els.profileBtn.title = "Profile";
-      if (els.userAvatarImg) els.userAvatarImg.src = "https://api.dicebear.com/7.x/adventurer/svg?seed=placeholder";
-      els.profileBtn.title = "Profile";
+      window.AnimeFlix.updateUserProfileButton?.({
+        button: els.profileBtn,
+        circle: els.profileCircle,
+        image: els.userAvatarImg,
+        username: "Profile",
+        avatarUrl: DEFAULT_AVATAR,
+      });
       els.profileUsername.textContent = "username";
       els.profileEmail.textContent = "user@example.com";
       return;
     }
 
-    // Tizimga kirgan foydalanuvchi uchun avatar (tanlangan yoki standart)
-    const savedAvatar = localStorage.getItem('animeflix:userAvatar') || DEFAULT_AVATAR;
-    if (els.userAvatarImg) {
-      els.userAvatarImg.src = savedAvatar;
-      els.userAvatarImg.onerror = function() {
-        // If image fails to load, hide it and show fallback
-        this.style.display = 'none';
-        const profileCircle = document.getElementById('profileCircle');
-        if (profileCircle) {
-          const initial = (identity.username || 'User').charAt(0).toUpperCase();
-          profileCircle.setAttribute('data-initial', initial);
-        }
-      };
-    }
+    const savedAvatar = localStorage.getItem(AVATAR_KEY) || DEFAULT_AVATAR;
+    window.AnimeFlix.updateUserProfileButton?.({
+      button: els.profileBtn,
+      circle: els.profileCircle,
+      image: els.userAvatarImg,
+      username: identity.username,
+      avatarUrl: savedAvatar,
+    });
 
-    // Nickname matni o'rniga avatar tugmasiga title va label beramiz
-    els.profileBtn.title = identity.username;
-    els.profileBtn.setAttribute('aria-label', `Profil: ${identity.username}`);
     els.profileUsername.textContent = identity.username;
     els.profileEmail.textContent = identity.email;
   }
@@ -164,48 +157,27 @@
     });
   }
 
-  function renderAvatarGrid() {
-    const grid = document.getElementById("avatarGrid");
-    if (!grid) return;
-    
-    grid.innerHTML = "";
-    const current = localStorage.getItem('animeflix:userAvatar') || DEFAULT_AVATAR;
-
-    AVATARS.forEach(url => {
-      const item = document.createElement("div");
-      item.className = `avatar-item ${url === current ? 'is-active' : ''}`;
-      const img = document.createElement('img');
-      img.src = url;
-      img.alt = "Avatar Option";
-      img.loading = "lazy";
-      img.onerror = () => { img.style.display = 'none'; item.classList.add('avatar-error'); };
-      item.appendChild(img);
-      item.addEventListener("click", () => {
-        localStorage.setItem('animeflix:userAvatar', url);
+  function openProfileMenu() {
+    if (!isAuthenticated()) return;
+    const identity = getActiveIdentity();
+    window.AnimeFlix.openProfileModal?.({
+      identity,
+      avatarUrl: localStorage.getItem(AVATAR_KEY) || DEFAULT_AVATAR,
+      onSave: async (avatarUrl) => {
+        await new Promise((resolve) => setTimeout(resolve, 320));
+        localStorage.setItem(AVATAR_KEY, avatarUrl || DEFAULT_AVATAR);
         updateAuthUI();
-        renderAvatarGrid();
-        toast("Avatar yangilandi", "Yangi ko'rinishingiz saqlandi!", "ok");
-      });
-      grid.appendChild(item);
+      },
     });
   }
 
-  function openProfileMenu() {
-    if (!isAuthenticated()) return;
-    renderContinueWatchingInProfile();
-    renderAvatarGrid();
-    els.profileMenu.hidden = false;
-    els.profileBtn.setAttribute("aria-expanded", "true");
-  }
-
   function closeProfileMenu() {
-    els.profileMenu.hidden = true;
-    els.profileBtn?.setAttribute("aria-expanded", "false");
+    window.AnimeFlix.closeProfileModal?.();
   }
 
   function toggleProfileMenu() {
-    if (els.profileMenu.hidden) openProfileMenu();
-    else closeProfileMenu();
+    if (window.AnimeFlix.isProfileModalOpen?.()) closeProfileMenu();
+    else openProfileMenu();
   }
 
   async function apiRequest(path, { method = "GET", body, auth = true, signal } = {}) {
