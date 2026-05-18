@@ -160,7 +160,7 @@
                 class="btn btn--ghost profileTrigger"
                 id="profileBtn"
                 type="button"
-                aria-haspopup="dialog"
+                aria-haspopup="menu"
                 aria-expanded="false"
               >
                 <div class="profile-circle" id="profileCircle" data-initial="U">
@@ -172,50 +172,53 @@
                   </svg>
                 </span>
               </button>
-              <div class="profileMenu" id="profileMenu" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle" hidden>
-                <div class="profileMenu__backdrop" id="profileBackdrop" aria-hidden="true"></div>
-                <section class="profileModal" role="document">
-                  <div class="profileModal__header">
-                    <div class="profileModal__avatarWrap" aria-hidden="true">
-                      <img id="profilePreviewImg" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default&backgroundColor=b6e3f4" alt="" />
-                      <span id="profilePreviewInitial">U</span>
-                    </div>
-                    <div class="profileModal__identity">
-                      <p class="profileModal__eyebrow">AnimeFlix profile</p>
-                      <h2 class="profileModal__username" id="profileModalTitle">
-                        <span id="profileUsername">username</span>
-                      </h2>
-                      <p class="profileModal__email" id="profileEmail">user@example.com</p>
-                    </div>
-                    <button class="profileModal__iconBtn" id="profileCloseBtn" type="button" aria-label="Close profile">
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
-                      </svg>
-                    </button>
+              <div class="profileMenu" id="profileMenu" role="menu" aria-label="Profile menu" hidden>
+                <div class="profileMenu__head">
+                  <div class="profileMenu__avatar" aria-hidden="true">
+                    <img id="profilePreviewImg" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default&backgroundColor=b6e3f4" alt="" />
                   </div>
-
-                  <div class="profileModal__divider" aria-hidden="true"></div>
-
-                  <div class="profileModal__sectionHead">
-                    <div>
-                      <p class="profileModal__sectionLabel">Avatar collection</p>
-                      <h3>Choose your look</h3>
-                    </div>
-                    <span class="profileModal__selection" id="profileSelectionStatus">Selected</span>
+                  <div class="profileMenu__identity">
+                    <div class="profileMenu__username" id="profileUsername">username</div>
+                    <div class="profileMenu__email" id="profileEmail">user@example.com</div>
+                    <div class="profileMenu__rank" id="profileDropdownRank">Anime Rookie</div>
                   </div>
+                </div>
 
-                  <div class="avatar-selector">
-                    <div class="avatar-grid" id="avatarGrid" role="radiogroup" aria-label="Choose profile avatar">
-                      <!-- Avatars will be injected by JS -->
-                    </div>
-                  </div>
+                <div class="profileMenu__divider" aria-hidden="true"></div>
 
-                  <div class="profileModal__actions">
-                    <button class="profileModal__button profileModal__button--ghost" id="profileCancelBtn" type="button">Cancel</button>
-                    <button class="profileModal__button profileModal__button--primary" id="profileSaveBtn" type="button">Save avatar</button>
-                    <button class="profileModal__logout" id="profileLogoutBtn" type="button">Logout</button>
+                <nav class="profileMenu__actions" aria-label="Profile quick actions">
+                  <a class="profileMenu__action" href="/profile/continue" data-profile-route>
+                    <span>Continue Watching</span>
+                    <strong id="profileDropdownContinueCount">0</strong>
+                  </a>
+                  <a class="profileMenu__action" href="/profile/favorites" data-profile-route>
+                    <span>Favorites</span>
+                    <strong id="profileDropdownFavoritesCount">0</strong>
+                  </a>
+                  <a class="profileMenu__action" href="/profile/history" data-profile-route>
+                    <span>Watch History</span>
+                    <strong id="profileDropdownHistoryCount">0</strong>
+                  </a>
+                  <a class="profileMenu__action profileMenu__action--primary" href="/profile" data-profile-route>
+                    <span>View Full Profile</span>
+                    <strong>Open</strong>
+                  </a>
+                  <a class="profileMenu__action" href="/profile/settings" data-profile-route>
+                    <span>Settings</span>
+                    <strong>Live</strong>
+                  </a>
+                </nav>
+
+                <div class="profileMenu__divider" aria-hidden="true"></div>
+
+                <div class="avatar-selector">
+                  <div class="avatar-selector__title">Choose Avatar</div>
+                  <div class="avatar-grid" id="avatarGrid" role="radiogroup" aria-label="Choose profile avatar">
+                    <!-- Avatars will be injected by JS -->
                   </div>
-                </section>
+                </div>
+
+                <button class="profileMenu__logout" id="profileLogoutBtn" type="button" role="menuitem">Logout</button>
               </div>
             </div>
           </div>
@@ -567,6 +570,11 @@
           <div class="empty__text">Browse an anime and tap the heart to save it here.</div>
         </div>
       </section>
+
+      <!-- PROFILE VIEW -->
+      <section class="profilePage" id="viewProfile" data-view="profile" hidden>
+        <div id="profilePageRoot"></div>
+      </section>
     </main>
 
     <footer class="footer">
@@ -581,9 +589,11 @@
     <script src="js/core.js" defer></script>
     <script src="js/api.js" defer></script>
     <script src="js/storage.js" defer></script>
-    <script src="js/components/AvatarGrid.js" defer></script>
-    <script src="js/components/UserProfileButton.js" defer></script>
-    <script src="js/components/ProfileModal.js" defer></script>
+    <script src="js/components/profile/avatarData.js" defer></script>
+    <script src="js/components/profile/AvatarSelector.js" defer></script>
+    <script src="js/components/profile/NavbarProfile.js" defer></script>
+    <script src="js/components/profile/ProfileDropdown.js" defer></script>
+    <script src="js/components/profile/ProfilePage.js" defer></script>
     <script src="js/auth.js" defer></script>
     <script src="login.js" defer></script>
     <script src="js/render.js" defer></script>

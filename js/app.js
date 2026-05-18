@@ -529,6 +529,22 @@
       return;
     }
 
+    if (state.route.name === "profile") {
+      if (!window.AnimeFlix.isAuthenticated()) {
+        window.AnimeFlix.openAuthGate?.({ mode: "login" });
+        location.hash = "#/login";
+        return;
+      }
+
+      showView("profile");
+      els.searchSection.hidden = true;
+      setSearchMode(false);
+      window.AnimeFlix.stopHeroRotation();
+      window.AnimeFlix.renderProfilePage?.();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     if (state.route.name === "login" || state.route.name === "signup") {
       if (window.AnimeFlix.isAuthenticated()) {
         location.hash = "#/";
@@ -677,6 +693,7 @@
     });
 
     window.addEventListener("hashchange", onRouteChange);
+    window.addEventListener("popstate", onRouteChange);
 
     els.trendingMoreBtn.addEventListener("click", () => loadList("trending", els.trendingSlider, els.trendingMeta));
     els.topMoreBtn.addEventListener("click", () => loadList("top", els.topSlider, els.topMeta));

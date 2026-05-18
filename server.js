@@ -3,8 +3,13 @@ const fs = require('fs');
 const path = require('path');
 
 const server = http.createServer((req, res) => {
-  let filePath = '.' + req.url;
+  const requestPath = req.url.split('?')[0];
+  let filePath = '.' + requestPath;
   if (filePath === './') {
+    filePath = './index.html';
+  }
+
+  if (!path.extname(filePath) && requestPath.startsWith('/profile')) {
     filePath = './index.html';
   }
 

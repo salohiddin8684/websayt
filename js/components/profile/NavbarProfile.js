@@ -1,4 +1,4 @@
-/* Header profile trigger updater */
+/* Navbar profile trigger updater */
 (function () {
   "use strict";
 

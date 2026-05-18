@@ -160,11 +160,10 @@
   function openProfileMenu() {
     if (!isAuthenticated()) return;
     const identity = getActiveIdentity();
-    window.AnimeFlix.openProfileModal?.({
+    window.AnimeFlix.openProfileDropdown?.({
       identity,
       avatarUrl: localStorage.getItem(AVATAR_KEY) || DEFAULT_AVATAR,
-      onSave: async (avatarUrl) => {
-        await new Promise((resolve) => setTimeout(resolve, 320));
+      onSelect: (avatarUrl) => {
         localStorage.setItem(AVATAR_KEY, avatarUrl || DEFAULT_AVATAR);
         updateAuthUI();
       },
@@ -172,11 +171,11 @@
   }
 
   function closeProfileMenu() {
-    window.AnimeFlix.closeProfileModal?.();
+    window.AnimeFlix.closeProfileDropdown?.();
   }
 
   function toggleProfileMenu() {
-    if (window.AnimeFlix.isProfileModalOpen?.()) closeProfileMenu();
+    if (window.AnimeFlix.isProfileDropdownOpen?.()) closeProfileMenu();
     else openProfileMenu();
   }
 

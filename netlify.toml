@@ -7,3 +7,13 @@
 
 [build.environment]
   NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/profile"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/profile/*"
+  to = "/index.html"
+  status = 200

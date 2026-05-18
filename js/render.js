@@ -36,6 +36,7 @@
     window.AnimeFlix.saveFavorites(previousFavorites);
     refreshFavButtons();
     renderFavoritesPage();
+    window.AnimeFlix.refreshProfilePage?.();
   }
 
   function createSkeletonCard() {
@@ -171,12 +172,14 @@
     if (!Array.isArray(state.continue) || state.continue.length === 0) {
       els.continueSection.hidden = true;
       els.continueSlider.replaceChildren();
+      window.AnimeFlix.refreshProfilePage?.();
       return;
     }
 
     els.continueSection.hidden = false;
     els.continueSlider.replaceChildren();
     renderAnime(els.continueSlider, state.continue, { layout: "slider" });
+    window.AnimeFlix.refreshProfilePage?.();
   }
 
   function renderFavoritesPage() {

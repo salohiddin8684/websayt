@@ -48,16 +48,14 @@
     userAvatarImg: $("userAvatarImg"),
     profileCircle: $("profileCircle"),
     profileMenu: $("profileMenu"),
-    profileBackdrop: $("profileBackdrop"),
     profilePreviewImg: $("profilePreviewImg"),
-    profilePreviewInitial: $("profilePreviewInitial"),
-    profileSelectionStatus: $("profileSelectionStatus"),
-    profileCloseBtn: $("profileCloseBtn"),
-    profileCancelBtn: $("profileCancelBtn"),
-    profileSaveBtn: $("profileSaveBtn"),
     avatarGrid: $("avatarGrid"),
     profileUsername: $("profileUsername"),
     profileEmail: $("profileEmail"),
+    profileDropdownRank: $("profileDropdownRank"),
+    profileDropdownContinueCount: $("profileDropdownContinueCount"),
+    profileDropdownFavoritesCount: $("profileDropdownFavoritesCount"),
+    profileDropdownHistoryCount: $("profileDropdownHistoryCount"),
     profileLogoutBtn: $("profileLogoutBtn"),
     logoutBtn: $("logoutBtn"),
 
@@ -99,6 +97,8 @@
     viewHome: $("viewHome"),
     viewDetails: $("viewDetails"),
     viewFavorites: $("viewFavorites"),
+    viewProfile: $("viewProfile"),
+    profilePageRoot: $("profilePageRoot"),
 
     // home / hero
     heroTitle: $("heroTitle"),
@@ -306,11 +306,19 @@
   }
 
   function parseRoute() {
+    const pathname = location.pathname.replace(/\/+$/, "");
+    const pathnameParts = pathname.split("/").filter(Boolean);
+
+    if (pathnameParts[0] === "profile") {
+      return { name: "profile", section: pathnameParts[1] || "overview" };
+    }
+
     const hash = (location.hash || "#/").replace(/^#/, "");
     const parts = hash.split("/").filter(Boolean);
 
     if (parts.length === 0) return { name: "home", id: null };
     if (parts[0] === "favorites") return { name: "favorites", id: null };
+    if (parts[0] === "profile") return { name: "profile", section: parts[1] || "overview" };
     if (parts[0] === "login") return { name: "login", id: null };
     if (parts[0] === "signup") return { name: "signup", id: null };
     if (parts[0] === "anime" && parts[1]) return { name: "details", id: parts[1] };
@@ -324,13 +332,14 @@
   }
 
   function showView(name) {
-    [els.viewHome, els.viewDetails, els.viewFavorites].forEach((view) => {
+    [els.viewHome, els.viewDetails, els.viewFavorites, els.viewProfile].forEach((view) => {
       view.hidden = true;
     });
 
     if (name === "home") els.viewHome.hidden = false;
     if (name === "details") els.viewDetails.hidden = false;
     if (name === "favorites") els.viewFavorites.hidden = false;
+    if (name === "profile") els.viewProfile.hidden = false;
   }
 
   function setSearchMode(active) {
