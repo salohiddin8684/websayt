@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="login.css" />
     <link rel="stylesheet" href="css/profile.css" />
+    <link rel="stylesheet" href="css/filter.css" />
   </head>
   <body data-theme="dark">
     <div class="bg-glow" aria-hidden="true"></div>
@@ -119,6 +120,7 @@
 
           <nav class="nav" aria-label="Primary navigation">
             <a class="nav__link" href="#/" id="navHome">Home</a>
+            <a class="nav__link" href="#/filter" id="navFilter">Browse</a>
             <a class="nav__link" href="#/favorites" id="navFavorites">Favorites</a>
           </nav>
         </div>
@@ -575,6 +577,13 @@
       <section class="profilePage" id="viewProfile" data-view="profile" hidden>
         <div id="profilePageRoot"></div>
       </section>
+
+      <!-- FILTER VIEW -->
+      <section class="filterPage section" id="viewFilter" data-view="filter" hidden>
+        <div class="container filterPage__inner">
+          <div id="filterRoot"></div>
+        </div>
+      </section>
     </main>
 
     <footer class="footer">
@@ -594,6 +603,7 @@
     <script src="js/components/profile/NavbarProfile.js" defer></script>
     <script src="js/components/profile/ProfileDropdown.js" defer></script>
     <script src="js/components/profile/ProfilePage.js" defer></script>
+    <script src="js/components/filter/FilterSystem.js" defer></script>
     <script src="js/auth.js" defer></script>
     <script src="login.js" defer></script>
     <script src="js/render.js" defer></script>

@@ -16,6 +16,7 @@
     theme: "animeflix:theme:v1",
     favorites: "animeflix:favorites:v2",
     continue: "animeflix:continue:v2",
+    profile: "animeflix:profile:v1",
     listCache: "animeflix:listCache:v2",
     searchCache: "animeflix:searchCache:v2",
     authToken: "animeflix:auth:token:v1",
@@ -36,6 +37,7 @@
 
     // nav
     navHome: $("navHome"),
+    navFilter: $("navFilter"),
     navFavorites: $("navFavorites"),
     loginNavBtn: $("loginNavBtn"),
     signupNavBtn: $("signupNavBtn"),
@@ -98,6 +100,7 @@
     viewDetails: $("viewDetails"),
     viewFavorites: $("viewFavorites"),
     viewProfile: $("viewProfile"),
+    viewFilter: $("viewFilter"),
     profilePageRoot: $("profilePageRoot"),
 
     // home / hero
@@ -171,6 +174,19 @@
     activeAnime: null,
     genreId: "",
     route: { name: "home", id: null },
+    profile: {
+      initialized: false,
+      username: "",
+      avatarUrl: "",
+      accentId: "purple",
+      bannerId: "violet-night",
+      watchHistory: [],
+      completedAnime: [],
+      unlockedAchievementIds: [],
+      lastUnlockedAchievementIds: [],
+      avatarVersion: 0,
+      themePreference: null,
+    },
     auth: {
       token: null,
       user: null,
@@ -308,17 +324,22 @@
   function parseRoute() {
     const pathname = location.pathname.replace(/\/+$/, "");
     const pathnameParts = pathname.split("/").filter(Boolean);
-
-    if (pathnameParts[0] === "profile") {
-      return { name: "profile", section: pathnameParts[1] || "overview" };
-    }
-
-    const hash = (location.hash || "#/").replace(/^#/, "");
+    const rawHash = location.hash || "";
+    const hash = rawHash.replace(/^#/, "");
     const parts = hash.split("/").filter(Boolean);
 
+    const hasNonProfileHashRoute =
+      rawHash === "#/" ||
+      (parts.length > 0 && parts[0] !== "profile");
+
+    if (pathnameParts[0] === "profile" && !hasNonProfileHashRoute) {
+      return { name: "profile", section: normalizeProfileSection(pathnameParts[1]) };
+    }
+
     if (parts.length === 0) return { name: "home", id: null };
+    if (parts[0] === "filter") return { name: "filter", id: null };
     if (parts[0] === "favorites") return { name: "favorites", id: null };
-    if (parts[0] === "profile") return { name: "profile", section: parts[1] || "overview" };
+    if (parts[0] === "profile") return { name: "profile", section: normalizeProfileSection(parts[1]) };
     if (parts[0] === "login") return { name: "login", id: null };
     if (parts[0] === "signup") return { name: "signup", id: null };
     if (parts[0] === "anime" && parts[1]) return { name: "details", id: parts[1] };
@@ -326,13 +347,20 @@
     return { name: "home", id: null };
   }
 
+  function normalizeProfileSection(section) {
+    const value = String(section || "overview").toLowerCase();
+    const allowed = new Set(["overview", "continue", "favorites", "history", "settings"]);
+    return allowed.has(value) ? value : "overview";
+  }
+
   function setActiveNav() {
     els.navHome.classList.toggle("is-active", state.route.name === "home" || state.route.name === "details");
+    els.navFilter?.classList.toggle("is-active", state.route.name === "filter");
     els.navFavorites.classList.toggle("is-active", state.route.name === "favorites");
   }
 
   function showView(name) {
-    [els.viewHome, els.viewDetails, els.viewFavorites, els.viewProfile].forEach((view) => {
+    [els.viewHome, els.viewDetails, els.viewFavorites, els.viewProfile, els.viewFilter].forEach((view) => {
       view.hidden = true;
     });
 
@@ -340,6 +368,7 @@
     if (name === "details") els.viewDetails.hidden = false;
     if (name === "favorites") els.viewFavorites.hidden = false;
     if (name === "profile") els.viewProfile.hidden = false;
+    if (name === "filter") els.viewFilter.hidden = false;
   }
 
   function setSearchMode(active) {
@@ -369,6 +398,7 @@
     normalizeLiteAnime,
     normalizeAnimeCollection,
     isAdultAnime,
+    normalizeProfileSection,
     parseRoute,
     setActiveNav,
     showView,

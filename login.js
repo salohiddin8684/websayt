@@ -200,6 +200,7 @@
 
     const copy = COPY[mode];
     activateLocalSession({ username: cleanIdentifier });
+    app.setProfileUsername?.(cleanIdentifier);
     app.updateAuthUI?.();
     closeAuthGate();
     location.hash = "#/";

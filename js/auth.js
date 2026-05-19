@@ -13,46 +13,16 @@
     normalizeAnimeCollection,
   } = window.AnimeFlix;
 
-  const AVATAR_KEY = "animeflix:userAvatar";
   const DEFAULT_AVATAR =
     window.AnimeFlix.DEFAULT_PROFILE_AVATAR ||
     "https://api.dicebear.com/7.x/avataaars/svg?seed=animeflix-default&backgroundColor=b6e3f4";
-
-  function validateEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
-  }
 
   function getLocalSession() {
     return window.AnimeFlix.getLocalSession?.() || { active: false, username: "" };
   }
 
-  function getTriggerLabel(value) {
-    const label = String(value || "").trim();
-    return label.length > 14 ? `${label.slice(0, 12)}...` : label || "Profile";
-  }
-
   function getActiveIdentity() {
-    if (state.auth.user) {
-      return {
-        username: state.auth.user.username || state.auth.user.fullName || "Profile",
-        email: state.auth.user.email || "Signed in",
-      };
-    }
-
-    const localSession = getLocalSession();
-    const localUsername = String(localSession?.username || "").trim();
-
-    if (localSession?.active) {
-      return {
-        username: localUsername || "Player One",
-        email: validateEmail(localUsername) ? localUsername.toLowerCase() : "Local session",
-      };
-    }
-
-    return {
-      username: "username",
-      email: "user@example.com",
-    };
+    return window.AnimeFlix.getProfileIdentity?.() || { username: "Profile", email: "user@example.com" };
   }
 
   function isAuthenticated() {
@@ -110,7 +80,7 @@
       return;
     }
 
-    const savedAvatar = localStorage.getItem(AVATAR_KEY) || DEFAULT_AVATAR;
+    const savedAvatar = state.profile.avatarUrl || DEFAULT_AVATAR;
     window.AnimeFlix.updateUserProfileButton?.({
       button: els.profileBtn,
       circle: els.profileCircle,
@@ -123,48 +93,14 @@
     els.profileEmail.textContent = identity.email;
   }
 
-  function renderContinueWatchingInProfile() {
-    const grid = document.getElementById("continueWatchingGrid");
-    if (!grid) return;
-    
-    grid.innerHTML = "";
-    
-    if (!Array.isArray(state.continue) || state.continue.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "continue-watching-empty";
-      empty.textContent = "No items yet";
-      grid.appendChild(empty);
-      return;
-    }
-
-    const items = state.continue.slice(0, 4); // Show max 4 items
-    
-    items.forEach(anime => {
-      const item = document.createElement("div");
-      item.className = "continue-watching-item";
-      item.innerHTML = `
-        <img src="${anime.image || ''}" alt="${anime.title}" class="continue-watching-item__img">
-        <div class="continue-watching-item__info">
-          <div class="continue-watching-item__title">${anime.title}</div>
-          <div class="continue-watching-item__episodes">${anime.episodes ? `${anime.episodes} ep` : 'N/A'}</div>
-        </div>
-      `;
-      item.addEventListener("click", () => {
-        location.hash = `#/anime/${anime.mal_id}`;
-        closeProfileMenu();
-      });
-      grid.appendChild(item);
-    });
-  }
-
   function openProfileMenu() {
     if (!isAuthenticated()) return;
     const identity = getActiveIdentity();
     window.AnimeFlix.openProfileDropdown?.({
       identity,
-      avatarUrl: localStorage.getItem(AVATAR_KEY) || DEFAULT_AVATAR,
+      avatarUrl: state.profile.avatarUrl || DEFAULT_AVATAR,
       onSelect: (avatarUrl) => {
-        localStorage.setItem(AVATAR_KEY, avatarUrl || DEFAULT_AVATAR);
+        window.AnimeFlix.setProfileAvatar?.(avatarUrl || DEFAULT_AVATAR);
         updateAuthUI();
       },
     });
@@ -238,7 +174,23 @@
     persistUser(normalized);
 
     state.favorites = new Map(normalized.favorites.map((anime) => [anime.mal_id, anime]));
-    state.continue = normalized.continueWatching.slice();
+    if (!Array.isArray(state.continue) || state.continue.length === 0) {
+      const now = Date.now();
+      state.continue = normalized.continueWatching.map((anime, index) => ({
+        ...anime,
+        currentEpisode: 1,
+        episodesTotal: anime.episodes || null,
+        progress: anime.episodes ? Math.max(1, Math.round((1 / anime.episodes) * 100)) : 4,
+        updatedAt: now - index,
+      }));
+    }
+
+    localStorage.setItem(LS_KEYS.favorites, JSON.stringify(normalized.favorites));
+    if (state.continue.length) localStorage.setItem(LS_KEYS.continue, JSON.stringify(state.continue));
+    else localStorage.removeItem(LS_KEYS.continue);
+
+    window.AnimeFlix.syncProfileWithAuthIdentity?.();
+    window.AnimeFlix.refreshAchievements?.({ persist: true });
     window.AnimeFlix.applyTheme(normalized.themePreference || state.theme, { persistGuest: false });
 
     updateAuthUI();
@@ -253,9 +205,8 @@
     state.auth.user = null;
     persistUser(null);
     closeProfileMenu();
+    window.AnimeFlix.loadProfileState?.();
     window.AnimeFlix.loadTheme();
-    window.AnimeFlix.loadFavorites();
-    window.AnimeFlix.loadContinue();
     updateAuthUI();
     window.AnimeFlix.renderContinue?.();
     window.AnimeFlix.renderFavoritesPage?.();
@@ -362,6 +313,7 @@
     if (!cleanUsername) return false;
 
     window.AnimeFlix.activateLocalSession?.({ username: cleanUsername });
+    window.AnimeFlix.setProfileUsername?.(cleanUsername);
     updateAuthUI();
     window.AnimeFlix.closeAuthGate?.();
     toast(successTitle, successText, "ok");
@@ -467,4 +419,8 @@
   window.AnimeFlix.saveRemoteFavorites = saveRemoteFavorites;
   window.AnimeFlix.saveRemoteContinueWatching = saveRemoteContinueWatching;
   window.AnimeFlix.saveThemePreference = saveThemePreference;
+
+  window.AnimeFlix.subscribeProfile?.(() => {
+    updateAuthUI();
+  });
 })();

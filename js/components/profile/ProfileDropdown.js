@@ -1,4 +1,4 @@
-/* Compact navbar profile dropdown */
+/* Navbar profile dropdown interactions */
 (function () {
   "use strict";
 
@@ -6,10 +6,10 @@
   if (!app) return;
 
   const { els, state, toast } = app;
-  const AVATAR_KEY = "animeflix:userAvatar";
+  const MENU_CLOSE_DELAY_MS = 180;
 
   let activeAvatar = app.DEFAULT_PROFILE_AVATAR;
-  let activeIdentity = { username: "username", email: "user@example.com" };
+  let activeIdentity = { username: "Profile", email: "user@example.com" };
   let selectHandler = null;
   let closeTimer = null;
 
@@ -17,16 +17,10 @@
     return !!els.profileMenu && !els.profileMenu.hidden;
   }
 
-  function getAnimeRank() {
-    const favorites = state.favorites?.size || 0;
-    const watching = Array.isArray(state.continue) ? state.continue.length : 0;
-    const score = favorites * 2 + watching;
-
-    if (score >= 40) return "Anime Legend";
-    if (score >= 24) return "Elite Otaku";
-    if (score >= 12) return "Seasoned Watcher";
-    if (score >= 4) return "Rising Fan";
-    return "Anime Rookie";
+  function lockMobileScroll(locked) {
+    const compactViewport = window.matchMedia("(max-width: 640px)").matches;
+    if (!compactViewport) return;
+    document.body.classList.toggle("profile-menu-open", !!locked);
   }
 
   function setPreview(avatarUrl) {
@@ -44,19 +38,19 @@
 
   function setIdentity(identity) {
     activeIdentity = {
-      username: String(identity?.username || "username").trim() || "username",
+      username: String(identity?.username || "Profile").trim() || "Profile",
       email: String(identity?.email || "Local session").trim() || "Local session",
     };
 
     if (els.profileUsername) els.profileUsername.textContent = activeIdentity.username;
     if (els.profileEmail) els.profileEmail.textContent = activeIdentity.email;
-    if (els.profileDropdownRank) els.profileDropdownRank.textContent = getAnimeRank();
+    if (els.profileDropdownRank) els.profileDropdownRank.textContent = app.getAnimeRank?.() || "Anime Rookie";
   }
 
   function setCounts() {
     const watching = Array.isArray(state.continue) ? state.continue.length : 0;
     const favorites = state.favorites?.size || 0;
-    const history = Math.max(watching, Math.min(12, watching + favorites));
+    const history = Array.isArray(state.profile?.watchHistory) ? state.profile.watchHistory.length : 0;
 
     if (els.profileDropdownContinueCount) els.profileDropdownContinueCount.textContent = String(watching);
     if (els.profileDropdownFavoritesCount) els.profileDropdownFavoritesCount.textContent = String(favorites);
@@ -78,10 +72,15 @@
     });
   }
 
+  function focusFirstMenuControl() {
+    const firstControl = els.profileMenu?.querySelector("[data-profile-route], .avatar-item, #profileLogoutBtn");
+    firstControl?.focus({ preventScroll: true });
+  }
+
   function prepareProfileDropdown({ identity, avatarUrl, onSelect } = {}) {
-    activeAvatar = avatarUrl || localStorage.getItem(AVATAR_KEY) || app.DEFAULT_PROFILE_AVATAR;
-    selectHandler = typeof onSelect === "function" ? onSelect : null;
-    setIdentity(identity);
+    activeAvatar = avatarUrl || state.profile?.avatarUrl || app.DEFAULT_PROFILE_AVATAR;
+    selectHandler = typeof onSelect === "function" ? onSelect : (url) => app.setProfileAvatar?.(url);
+    setIdentity(identity || app.getProfileIdentity?.());
     setCounts();
     setPreview(activeAvatar);
     renderAvatarGrid();
@@ -94,28 +93,38 @@
     prepareProfileDropdown(options);
     els.profileMenu.hidden = false;
     els.profileBtn.setAttribute("aria-expanded", "true");
+    lockMobileScroll(true);
 
     requestAnimationFrame(() => {
       els.profileMenu.classList.add("is-open");
+      focusFirstMenuControl();
     });
   }
 
-  function closeProfileDropdown() {
+  function closeProfileDropdown({ restoreFocus = false } = {}) {
     if (!els.profileMenu || els.profileMenu.hidden) return;
 
     els.profileMenu.classList.remove("is-open");
     els.profileBtn?.setAttribute("aria-expanded", "false");
+    lockMobileScroll(false);
 
     closeTimer = window.setTimeout(() => {
       if (!els.profileMenu.classList.contains("is-open")) {
         els.profileMenu.hidden = true;
       }
-    }, 180);
+      if (restoreFocus) els.profileBtn?.focus({ preventScroll: true });
+    }, MENU_CLOSE_DELAY_MS);
   }
 
   function toggleProfileDropdown(options = {}) {
-    if (isProfileDropdownOpen()) closeProfileDropdown();
+    if (isProfileDropdownOpen()) closeProfileDropdown({ restoreFocus: true });
     else openProfileDropdown(options);
+  }
+
+  function navigateProfileRoute(route) {
+    const target = String(route || "/profile");
+    history.pushState(null, "", target);
+    window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
   els.profileMenu?.addEventListener("click", (event) => {
@@ -123,12 +132,50 @@
     if (!routeLink) return;
 
     event.preventDefault();
-    closeProfileDropdown();
-    history.pushState(null, "", routeLink.getAttribute("href") || "/profile");
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    closeProfileDropdown({ restoreFocus: true });
+    navigateProfileRoute(routeLink.getAttribute("href"));
   });
 
-  app.getAnimeRank = getAnimeRank;
+  document.addEventListener("pointerdown", (event) => {
+    if (!isProfileDropdownOpen()) return;
+    const target = event.target;
+    if (target === els.profileBtn || els.profileBtn?.contains(target)) return;
+    if (target === els.profileMenu || els.profileMenu?.contains(target)) return;
+    closeProfileDropdown();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (!isProfileDropdownOpen()) return;
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeProfileDropdown({ restoreFocus: true });
+    }
+  });
+
+  els.profileBtn?.addEventListener("keydown", (event) => {
+    if (event.key !== "ArrowDown") return;
+    event.preventDefault();
+    openProfileDropdown();
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isProfileDropdownOpen()) return;
+    lockMobileScroll(true);
+  });
+
+  window.addEventListener("hashchange", () => closeProfileDropdown());
+  window.addEventListener("popstate", () => closeProfileDropdown());
+
+  app.subscribeProfile?.(() => {
+    if (!isProfileDropdownOpen()) return;
+    prepareProfileDropdown({
+      identity: app.getProfileIdentity?.(),
+      avatarUrl: state.profile?.avatarUrl || activeAvatar,
+      onSelect: selectHandler,
+    });
+  });
+
   app.openProfileDropdown = openProfileDropdown;
   app.closeProfileDropdown = closeProfileDropdown;
   app.toggleProfileDropdown = toggleProfileDropdown;

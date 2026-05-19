@@ -26,8 +26,9 @@
     getCachedListPage,
     cacheSearchPage,
     getCachedSearchPage,
-    saveContinue,
   } = window.AnimeFlix;
+  const DETAILS_FALLBACK_POSTER =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 420 600'%3E%3Crect width='420' height='600' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23e5e7eb' font-family='Arial' font-size='26' dy='.3em'%3ENo Poster%3C/text%3E%3C/svg%3E";
 
   async function loadHero() {
     try {
@@ -330,6 +331,9 @@
       els.detailsEpisodes.textContent = `Episodes: ${lite.episodes ?? "--"}`;
       els.detailsSynopsis.textContent = sanitizeText(lite.synopsis) || "No synopsis available.";
       els.detailsImage.src = lite.image || "";
+      els.detailsImage.onerror = () => {
+        els.detailsImage.src = DETAILS_FALLBACK_POSTER;
+      };
       els.detailsMalLink.href = lite.url || "#";
 
       const queryTitle = lite.title || "";
@@ -365,7 +369,7 @@
 
       loadRecommendations(lite.mal_id);
       loadCharacters(lite.mal_id);
-      await saveContinue(lite);
+      await window.AnimeFlix.recordAnimeVisit?.(lite, { incrementEpisode: true });
       window.AnimeFlix.refreshFavButtons();
       setStatus("");
     } catch (error) {
@@ -532,7 +536,8 @@
     if (state.route.name === "profile") {
       if (!window.AnimeFlix.isAuthenticated()) {
         window.AnimeFlix.openAuthGate?.({ mode: "login" });
-        location.hash = "#/login";
+        history.replaceState(null, "", "/#/login");
+        window.dispatchEvent(new PopStateEvent("popstate"));
         return;
       }
 
@@ -541,6 +546,16 @@
       setSearchMode(false);
       window.AnimeFlix.stopHeroRotation();
       window.AnimeFlix.renderProfilePage?.();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    if (state.route.name === "filter") {
+      showView("filter");
+      els.searchSection.hidden = true;
+      setSearchMode(false);
+      window.AnimeFlix.stopHeroRotation();
+      window.AnimeFlix.renderFilterView?.();
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -618,17 +633,20 @@
       if (state.activeAnime) window.AnimeFlix.toggleFavorite(state.activeAnime);
     });
 
-    els.clearFavoritesBtn.addEventListener("click", () => {
-      const previousFavorites = new Map(state.favorites);
-      state.favorites.clear();
-      window.AnimeFlix.saveFavorites(previousFavorites);
+    els.clearFavoritesBtn.addEventListener("click", async () => {
+      const cleared = await window.AnimeFlix.clearFavorites?.();
+      if (!cleared) {
+        toast("Favorites not cleared", "Could not update favorites right now.", "error", 2200);
+        return;
+      }
       window.AnimeFlix.renderFavoritesPage();
       window.AnimeFlix.refreshFavButtons();
+      window.AnimeFlix.refreshProfilePage?.();
       toast("Favorites cleared", "Your list is now empty.", "warn");
     });
 
     els.clearContinueBtn.addEventListener("click", async () => {
-      await saveContinue(null);
+      await window.AnimeFlix.clearContinueWatching?.();
       toast("Cleared", "Continue watching cleared.", "warn");
     });
 
@@ -701,9 +719,8 @@
   }
 
   async function init() {
+    window.AnimeFlix.loadProfileState?.();
     window.AnimeFlix.loadTheme();
-    window.AnimeFlix.loadFavorites();
-    window.AnimeFlix.loadContinue();
     window.AnimeFlix.initAuthGate?.();
     window.AnimeFlix.renderContinue();
     window.AnimeFlix.renderFavoritesPage();

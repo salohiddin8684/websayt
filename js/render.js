@@ -14,6 +14,8 @@
 
   const HERO_ROTATION_MS = 6500;
   let heroAnimationTimer = null;
+  const CARD_FALLBACK_POSTER =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 420 600'%3E%3Crect width='420' height='600' fill='%23111827'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23e5e7eb' font-family='Arial' font-size='26' dy='.3em'%3ENo Poster%3C/text%3E%3C/svg%3E";
 
   function isFav(id) {
     return state.favorites.has(Number(id));
@@ -34,9 +36,22 @@
     }
 
     window.AnimeFlix.saveFavorites(previousFavorites);
+    pulseFavoriteButtons(id);
     refreshFavButtons();
     renderFavoritesPage();
     window.AnimeFlix.refreshProfilePage?.();
+  }
+
+  function pulseFavoriteButtons(id) {
+    document.querySelectorAll(`[data-fav-btn][data-id="${id}"]`).forEach((button) => {
+      button.classList.remove("is-pop");
+      // restart animation when toggled repeatedly
+      void button.offsetWidth;
+      button.classList.add("is-pop");
+      window.setTimeout(() => {
+        button.classList.remove("is-pop");
+      }, 280);
+    });
   }
 
   function createSkeletonCard() {
@@ -78,6 +93,9 @@
     image.decoding = "async";
     image.alt = `${lite.title} poster`;
     image.src = lite.image || "";
+    image.onerror = () => {
+      image.src = CARD_FALLBACK_POSTER;
+    };
     media.appendChild(image);
 
     const body = document.createElement("div");
@@ -102,9 +120,7 @@
     body.append(title, meta);
     card.append(favoriteButton, media, body);
 
-    const openDetails = async () => {
-      // Add to continue watching when anime is opened
-      await window.AnimeFlix.saveContinue(lite);
+    const openDetails = () => {
       location.hash = `#/anime/${lite.mal_id}`;
     };
 
