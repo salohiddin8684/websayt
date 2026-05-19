@@ -101,13 +101,30 @@ function requestJikan(url) {
 
 function buildJikanUrl(rawParams = {}) {
   const params = rawParams || {};
-  const type = String(params.type || "top").toLowerCase();
+  const type = String(params.type || "").toLowerCase();
   const resource = String(params.resource || "").toLowerCase();
   const search = String(params.search || params.q || "").trim();
   const genres = String(params.genres || "").trim();
+  const genresExclude = String(params.genres_exclude || "").trim();
   const sfw = normalizeBoolean(params.sfw);
   const page = readPositiveInt(params.page, DEFAULT_PAGE);
   const limit = Math.min(readPositiveInt(params.limit, DEFAULT_LIMIT), MAX_LIMIT);
+  const animeBrowseTypes = new Set(["tv", "movie", "ova", "ona", "special"]);
+  const hasAnimeFilters = Boolean(
+    search ||
+      genres ||
+      genresExclude ||
+      animeBrowseTypes.has(type) ||
+      params.status ||
+      params.min_score ||
+      params.max_score ||
+      params.start_date ||
+      params.end_date ||
+      params.rating ||
+      params.producers ||
+      params.order_by ||
+      params.sort,
+  );
 
   const url = new URL(JIKAN_BASE_URL);
 
@@ -128,13 +145,23 @@ function buildJikanUrl(rawParams = {}) {
     return url;
   }
 
-  // Search takes priority over list browsing when a query or genre filter exists.
-  if (search || genres) {
+  // Search/list browsing supports the advanced filter page. Top lists keep using
+  // /top/anime unless advanced query parameters are present.
+  if (hasAnimeFilters) {
     url.pathname += "/anime";
     addParam(url, "q", search);
     addParam(url, "page", page);
     addParam(url, "limit", limit);
     addParam(url, "genres", genres);
+    addParam(url, "genres_exclude", genresExclude);
+    if (animeBrowseTypes.has(type)) addParam(url, "type", type);
+    addParam(url, "status", params.status);
+    addParam(url, "min_score", params.min_score);
+    addParam(url, "max_score", params.max_score);
+    addParam(url, "start_date", params.start_date);
+    addParam(url, "end_date", params.end_date);
+    addParam(url, "rating", params.rating);
+    addParam(url, "producers", params.producers);
     addParam(url, "sfw", sfw);
     addParam(url, "order_by", params.order_by || "members");
     addParam(url, "sort", params.sort || "desc");
@@ -146,17 +173,19 @@ function buildJikanUrl(rawParams = {}) {
   addParam(url, "limit", limit);
   addParam(url, "sfw", sfw);
 
-  if (type === "airing") {
+  const topType = type || "top";
+
+  if (topType === "airing") {
     url.searchParams.set("filter", "airing");
     return url;
   }
 
-  if (type === "popular") {
+  if (topType === "popular") {
     url.searchParams.set("filter", "bypopularity");
     return url;
   }
 
-  if (type !== "top") {
+  if (topType !== "top") {
     throw badRequest("Unsupported type. Use top, airing, or popular.");
   }
 
