@@ -266,3 +266,87 @@ body[data-theme="light"] .nav {
   background: color-mix(in srgb, rgba(255,255,255,.85) 60%, transparent);
   border-color: color-mix(in srgb, #111827 15%, transparent);
 }
+
+/* AnimeFlix dark navbar refresh */
+.header,
+body[data-theme="light"] .header {
+  background: #0f0f17;
+  border-bottom: 1px solid #2a2a45;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .28);
+  backdrop-filter: none;
+}
+
+.brand__mark {
+  border-radius: 8px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  box-shadow: 0 10px 24px rgba(124, 58, 237, .28);
+}
+
+.brand__name {
+  color: #f1f1f1;
+}
+
+.nav,
+body[data-theme="light"] .nav {
+  gap: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.nav__link {
+  overflow: visible;
+  border-radius: 0;
+  padding: 10px 2px;
+  color: #9ca3af;
+}
+
+.nav__link::before {
+  display: none;
+}
+
+.nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7c3aed, #a855f7);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .2s ease;
+}
+
+.nav__link:hover {
+  background: transparent;
+  color: #f1f1f1;
+  transform: none;
+}
+
+.nav__link.is-active {
+  border: 0;
+  background: transparent;
+  color: #f1f1f1;
+  box-shadow: none;
+  transform: none;
+}
+
+.nav__link.is-active::after {
+  transform: scaleX(1);
+}
+
+.search-bar,
+body[data-theme="light"] .search-bar {
+  border-color: #2a2a45;
+  border-radius: 8px;
+  background: #1a1a2e;
+}
+
+.selectMenu {
+  background: #0f0f17;
+  border-color: #2a2a45;
+}

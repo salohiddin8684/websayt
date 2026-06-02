@@ -109,7 +109,7 @@ function buildJikanUrl(rawParams = {}) {
   const sfw = normalizeBoolean(params.sfw);
   const page = readPositiveInt(params.page, DEFAULT_PAGE);
   const limit = Math.min(readPositiveInt(params.limit, DEFAULT_LIMIT), MAX_LIMIT);
-  const animeBrowseTypes = new Set(["tv", "movie", "ova", "ona", "special"]);
+  const animeBrowseTypes = new Set(["tv", "movie", "ova", "ona", "special", "music"]);
   const hasAnimeFilters = Boolean(
     search ||
       genres ||
@@ -141,6 +141,7 @@ function buildJikanUrl(rawParams = {}) {
     url.pathname += `/anime/${id}`;
     if (resource === "recommendations") url.pathname += "/recommendations";
     else if (resource === "characters") url.pathname += "/characters";
+    else if (resource === "videos") url.pathname += "/videos";
     else if (resource && resource !== "details") throw badRequest("Unsupported resource.");
     return url;
   }

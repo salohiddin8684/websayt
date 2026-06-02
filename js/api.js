@@ -36,7 +36,7 @@
     const base = isLocal ? "https://api.jikan.moe/v4" : window.location.origin;
     const url = isLocal ? new URL(base + normalizedPath) : new URL(API_BASE, base);
 
-    const detailMatch = normalizedPath.match(/^\/anime\/(\d+)(?:\/(recommendations|characters))?$/);
+    const detailMatch = normalizedPath.match(/^\/anime\/(\d+)(?:\/(recommendations|characters|videos))?$/);
 
     // Preserve the existing fetchAnime(path, params) contract and translate it
     // into the Netlify function query format.
@@ -127,6 +127,8 @@
           url.pathname = `/anime/${animeId}/recommendations`;
         } else if (resource === "characters") {
           url.pathname = `/anime/${animeId}/characters`;
+        } else if (resource === "videos") {
+          url.pathname = `/anime/${animeId}/videos`;
         } else {
           url.pathname = `/anime/${animeId}`;
         }
@@ -177,7 +179,7 @@
           let waitMs = 0;
           if (isRateLimit) {
             const retryAfterSec = Number(res.headers.get("Retry-After"));
-            waitMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ? retryAfterSec * 1000 : 2500;
+            waitMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ? retryAfterSec * 1000 : 1500;
           } else {
             waitMs = 900 * 2 ** (attempt - 1);
           }

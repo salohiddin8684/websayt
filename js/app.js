@@ -504,6 +504,9 @@
 
   async function onRouteChange() {
     state.route = parseRoute();
+    if (state.route.name !== "details") {
+      window.AnimeFlix.stopAnimeDetails?.();
+    }
     setActiveNav();
 
     if (state.route.name === "home") {
@@ -579,7 +582,11 @@
       showView("details");
       els.searchSection.hidden = true;
       window.AnimeFlix.stopHeroRotation();
-      await loadDetails(state.route.id);
+      if (typeof window.AnimeFlix.loadAnimeDetails === "function") {
+        await window.AnimeFlix.loadAnimeDetails(state.route.id);
+      } else {
+        await loadDetails(state.route.id);
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }

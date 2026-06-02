@@ -7,6 +7,9 @@
     <meta name="description" content="Browse top anime, search titles, and save favorites using the Jikan API." />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="login.css" />
     <link rel="stylesheet" href="css/profile.css" />
@@ -507,54 +510,51 @@
       </section>
 
       <!-- DETAILS VIEW -->
-      <section class="section container" id="viewDetails" data-view="details" hidden>
-        <div class="details">
-          <button class="btn btn--ghost details__back" id="detailsBackBtn" type="button">← Back</button>
-          <div class="details__layout">
-            <div class="details__poster">
-              <div class="poster-frame poster-frame--details">
+      <section class="animeDetailPage" id="viewDetails" data-view="details" hidden>
+        <div class="detailHero" id="detailHero">
+          <div class="detailHero__cover" id="detailsCover" aria-hidden="true"></div>
+          <div class="container detailHero__inner">
+            <button class="btn btn--ghost details__back" id="detailsBackBtn" type="button">← Back</button>
+            <div class="detailHero__layout">
+              <div class="detailHero__poster">
                 <img id="detailsImage" alt="Anime poster" loading="eager" decoding="async" />
-                <div class="poster-frame__overlay" aria-hidden="true"></div>
               </div>
-            </div>
-            <div class="details__content">
-              <h2 class="details__title" id="detailsTitle">Loading…</h2>
-              <div class="details__meta">
-                <span class="pill" id="detailsScore">★ —</span>
-                <span class="pill pill--ghost" id="detailsEpisodes">Episodes: —</span>
-              </div>
-              <div class="chips" id="detailsGenres"></div>
-              <p class="details__synopsis" id="detailsSynopsis"></p>
-              <div class="details__actions">
-                <button class="btn btn--secondary" id="detailsFavBtn" type="button">Add to favorites</button>
-                <a class="btn btn--ghost" id="detailsMalLink" href="#" target="_blank" rel="noreferrer">MyAnimeList</a>
-                <a class="btn btn--secondary" id="detailsWatchBtn" href="#" target="_blank" rel="noreferrer">Watch</a>
-                <a class="btn btn--primary" id="detailsTrailerBtn" href="#" target="_blank" rel="noreferrer" hidden>Watch trailer</a>
+              <div class="detailHero__content">
+                <h1 class="details__title" id="detailsTitle">Loading...</h1>
+                <div class="details__meta">
+                  <span class="pill" id="detailsScore">★ --</span>
+                  <span class="pill pill--ghost" id="detailsEpisodes">Episodes: --</span>
+                  <span class="pill pill--ghost" id="detailsStatus">Status: --</span>
+                  <span class="pill pill--ghost" id="detailsStudio">Studio: --</span>
+                </div>
+                <div class="chips" id="detailsGenres"></div>
+                <p class="details__synopsis" id="detailsSynopsis"></p>
+                <div class="details__actions">
+                  <button class="btn btn--secondary" id="detailsFavBtn" type="button">Add to favorites</button>
+                  <a class="btn btn--ghost" id="detailsMalLink" href="#" target="_blank" rel="noreferrer">MyAnimeList</a>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="details__extras">
-            <section class="section" aria-label="Recommendations">
-              <div class="section__head">
-                <h3 class="section__title">Recommendations</h3>
-                <div class="section__actions">
-                  <span class="muted" id="recsMeta"></span>
-                </div>
-              </div>
-              <div class="grid grid--tight" id="recsGrid"></div>
-            </section>
+        <div class="container details__main">
+          <section class="detailWatch" aria-label="Anime video player">
+            <div class="detailWatch__head">
+              <h2 class="section__title">Video Player</h2>
+              <span class="muted" id="episodeNow">Hozir ijro etilmoqda: Epizod 1</span>
+            </div>
+            <div id="detailVideoHost"></div>
+            <div class="episodeRail" id="episodeList" aria-label="Episodes"></div>
+          </section>
 
-            <section class="section" aria-label="Characters">
-              <div class="section__head">
-                <h3 class="section__title">Characters</h3>
-                <div class="section__actions">
-                  <span class="muted" id="charsMeta"></span>
-                </div>
-              </div>
-              <div class="people" id="charsList"></div>
-            </section>
-          </div>
+          <section class="details__similar" aria-label="Similar anime">
+            <div class="section__head">
+              <h2 class="section__title">O'xshash animelar</h2>
+              <span class="muted" id="recsMeta"></span>
+            </div>
+            <div class="grid grid--tight" id="recsGrid"></div>
+          </section>
         </div>
       </section>
 
@@ -603,10 +603,12 @@
     <script src="js/components/profile/NavbarProfile.js" defer></script>
     <script src="js/components/profile/ProfileDropdown.js" defer></script>
     <script src="js/components/profile/ProfilePage.js" defer></script>
-    <script src="js/components/filter/FilterSystem.js" defer></script>
     <script src="js/auth.js" defer></script>
     <script src="login.js" defer></script>
     <script src="js/render.js" defer></script>
+    <script src="js/player.js" defer></script>
+    <script src="js/detail.js" defer></script>
+    <script src="js/filter.js" defer></script>
     <script src="js/app.js" defer></script>
     <script defer>
       // boot
