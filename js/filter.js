@@ -75,7 +75,27 @@
   let genres = [];
   let retryTimer = 0;
 
-  let filters = createDefaultFilters();
+  
+  function getHashParams() {
+    const hash = window.location.hash;
+    const params = {};
+    const qIndex = hash.indexOf('?');
+    if (qIndex !== -1) {
+      const qs = hash.substring(qIndex + 1);
+      const searchParams = new URLSearchParams(qs);
+      for (const [k, v] of searchParams.entries()) {
+        params[k] = v;
+      }
+    }
+    return params;
+  }
+
+  let 
+        filters = createDefaultFilters();
+        const urlParams = getHashParams();
+        if (urlParams.genre) filters.genre = urlParams.genre;
+
+
   let viewState = createDefaultViewState();
 
   const debouncedReload = debounce(() => loadResults({ reset: true }), 420);
@@ -126,6 +146,9 @@
       syncControls();
       renderGenrePills(true);
       loadGenres();
+      const urlParams = getHashParams();
+      if (urlParams.genre) filters.genre = urlParams.genre;
+
       loadResults({ reset: true });
       return;
     }
@@ -308,7 +331,11 @@
       }
 
       if (target.closest("[data-clear-all]")) {
+        
         filters = createDefaultFilters();
+        const urlParams = getHashParams();
+        if (urlParams.genre) filters.genre = urlParams.genre;
+
         syncControls();
         setDrawerOpen(false);
         loadResults({ reset: true });
@@ -350,7 +377,7 @@
         event.stopPropagation();
         const anime = findItemById(favoriteButton.getAttribute("data-filter-fav"));
         if (anime) {
-          app.toggleFavorite?.(anime);
+          app.storage?.toggleFavorite(anime);
           syncFavoriteButtons();
         }
         return;
@@ -672,7 +699,7 @@
   }
 
   function renderAnimeCard(lite) {
-    const favorite = state.favorites?.has?.(Number(lite.mal_id));
+    const favorite = app.storage?.isFavorite(lite.mal_id);
     const status = lite.status ? shortStatus(lite.status) : "TBA";
     const episodes = lite.episodes ? `${lite.episodes} ep` : "Epizodlar TBA";
     const type = lite.type || "Anime";
@@ -752,7 +779,7 @@
 
   function syncFavoriteButtons() {
     root?.querySelectorAll("[data-filter-fav]").forEach((button) => {
-      const active = state.favorites?.has?.(Number(button.getAttribute("data-filter-fav")));
+      const active = app.storage?.isFavorite(button.getAttribute("data-filter-fav"));
       button.classList.toggle("is-on", !!active);
       button.textContent = active ? "Saqlangan" : "Sevimli";
       button.setAttribute("aria-pressed", active ? "true" : "false");

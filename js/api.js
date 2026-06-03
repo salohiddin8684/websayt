@@ -1,224 +1,103 @@
-/* AnimeFlix API (Netlify proxy client + request pacing) */
-(function () {
+/* API Manager */
+(function() {
   "use strict";
 
-  const { API_BASE, cache, sleep } = window.AnimeFlix;
+  const app = window.AnimeFlix || {};
+  window.AnimeFlix = app;
 
-  const requestGate = {
-    chain: Promise.resolve(),
-    lastAt: 0,
-    minGapMs: 1200,
-  };
+  const BASE_URL = 'https://api.jikan.moe/v4';
+  
+  // Request Queue
+  let isRequesting = false;
+  const requestQueue = [];
 
-  async function scheduleRequest() {
-    const run = async () => {
-      const now = Date.now();
-      const wait = Math.max(0, requestGate.minGapMs - (now - requestGate.lastAt));
-      if (wait) await sleep(wait);
-      requestGate.lastAt = Date.now();
-    };
-    requestGate.chain = requestGate.chain.then(run, run);
-    return requestGate.chain;
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  function addQueryParam(url, key, value) {
-    if (value === undefined || value === null || value === "") return;
-    url.searchParams.set(key, String(value));
+  async function processQueue() {
+    if (isRequesting || requestQueue.length === 0) return;
+    
+    isRequesting = true;
+    const { url, options, retries, resolve, reject } = requestQueue.shift();
+
+    try {
+      const result = await executeRequest(url, options, retries);
+      resolve(result);
+    } catch (error) {
+      reject(error);
+    } finally {
+      // Wait 300ms before next request for rate limit
+      await sleep(300);
+      isRequesting = false;
+      processQueue();
+    }
   }
 
-  function buildProxyUrl(path, params = {}) {
-    const normalizedPath = String(path || "").trim();
-    
-    // Live Serverda ishlayotganimizni tekshiramiz
-    const isLocal = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
-    
-    // Agar lokal bo'lsa, Jikan API-ga to'g'ridan-to'g'ri boramiz, aks holda Netlify funksiyasiga
-    const base = isLocal ? "https://api.jikan.moe/v4" : window.location.origin;
-    const url = isLocal ? new URL(base + normalizedPath) : new URL(API_BASE, base);
-
-    const detailMatch = normalizedPath.match(/^\/anime\/(\d+)(?:\/(recommendations|characters|videos))?$/);
-
-    // Preserve the existing fetchAnime(path, params) contract and translate it
-    // into the Netlify function query format.
-    if (normalizedPath === "/top/anime") {
-      const filter = String(params.filter || "").toLowerCase();
-      const type =
-        params.type ||
-        (filter === "airing" ? "airing" : filter === "bypopularity" ? "popular" : "top");
-
-      if (isLocal) {
-        // Jikan API uchun parametrlarni o'zgartiramiz
-        if (type === "airing") addQueryParam(url, "filter", "airing");
-        else if (type === "popular") addQueryParam(url, "filter", "bypopularity");
-        addQueryParam(url, "page", params.page);
-        addQueryParam(url, "limit", params.limit);
-        addQueryParam(url, "sfw", params.sfw);
-        return url;
-      }
-
-      addQueryParam(url, "type", type);
-      addQueryParam(url, "page", params.page);
-      addQueryParam(url, "limit", params.limit);
-      addQueryParam(url, "sfw", params.sfw);
-
-      if (filter && filter !== "airing" && filter !== "bypopularity") {
-        addQueryParam(url, "filter", filter);
-      }
-
-      return url;
-    }
-
-    if (normalizedPath === "/anime") {
-      if (isLocal) {
-        addQueryParam(url, "q", params.search || params.q);
-        addQueryParam(url, "page", params.page);
-        addQueryParam(url, "limit", params.limit);
-        addQueryParam(url, "genres", params.genres);
-        addQueryParam(url, "genres_exclude", params.genres_exclude);
-        addQueryParam(url, "type", params.type);
-        addQueryParam(url, "status", params.status);
-        addQueryParam(url, "min_score", params.min_score);
-        addQueryParam(url, "max_score", params.max_score);
-        addQueryParam(url, "start_date", params.start_date);
-        addQueryParam(url, "end_date", params.end_date);
-        addQueryParam(url, "rating", params.rating);
-        addQueryParam(url, "producers", params.producers);
-        addQueryParam(url, "sfw", params.sfw);
-        addQueryParam(url, "order_by", params.order_by);
-        addQueryParam(url, "sort", params.sort);
-        return url;
-      }
-
-      addQueryParam(url, "search", params.search || params.q);
-      addQueryParam(url, "page", params.page);
-      addQueryParam(url, "limit", params.limit);
-      addQueryParam(url, "genres", params.genres);
-      addQueryParam(url, "genres_exclude", params.genres_exclude);
-      addQueryParam(url, "type", params.type);
-      addQueryParam(url, "status", params.status);
-      addQueryParam(url, "min_score", params.min_score);
-      addQueryParam(url, "max_score", params.max_score);
-      addQueryParam(url, "start_date", params.start_date);
-      addQueryParam(url, "end_date", params.end_date);
-      addQueryParam(url, "rating", params.rating);
-      addQueryParam(url, "producers", params.producers);
-      addQueryParam(url, "sfw", params.sfw);
-      addQueryParam(url, "order_by", params.order_by);
-      addQueryParam(url, "sort", params.sort);
-      return url;
-    }
-
-    if (normalizedPath === "/genres/anime") {
-      if (isLocal) {
-        addQueryParam(url, "filter", "genres");
-        return url;
-      }
-      addQueryParam(url, "resource", "genres");
-      return url;
-    }
-
-    if (detailMatch) {
-      if (isLocal) {
-        // Local development - direct Jikan API
-        const animeId = detailMatch[1];
-        const resource = detailMatch[2];
-        
-        if (resource === "recommendations") {
-          url.pathname = `/anime/${animeId}/recommendations`;
-        } else if (resource === "characters") {
-          url.pathname = `/anime/${animeId}/characters`;
-        } else if (resource === "videos") {
-          url.pathname = `/anime/${animeId}/videos`;
+  async function executeRequest(url, options, retriesLeft) {
+    try {
+      const response = await fetch(url, options);
+      
+      if (response.status === 429) {
+        if (retriesLeft > 0) {
+          console.warn(`429 Rate Limit. Retrying in 1.5s... (${retriesLeft} retries left)`);
+          await sleep(1500);
+          return await executeRequest(url, options, retriesLeft - 1);
         } else {
-          url.pathname = `/anime/${animeId}`;
+          throw new Error("API Rate Limit Exceeded (429)");
         }
-        return url;
-      } else {
-        // Netlify function
-        addQueryParam(url, "id", detailMatch[1]);
-        addQueryParam(url, "resource", detailMatch[2] || "details");
-        return url;
       }
-    }
 
-    throw new Error(`Unsupported API path: ${normalizedPath}`);
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error.name === 'AbortError') throw error;
+      if (retriesLeft > 0 && !error.message.includes('429')) {
+        await sleep(1000);
+        return await executeRequest(url, options, retriesLeft - 1);
+      }
+      throw error;
+    }
   }
 
-  async function fetchAnime(path, params = {}, { cacheTtlMs = 45_000, signal } = {}) {
-    const url = buildProxyUrl(path, params);
-
-    const key = url.toString();
-    const cached = cache.get(key);
-    if (cached && Date.now() - cached.t < cacheTtlMs) return cached.json;
-
-    const headers = { Accept: "application/json" };
-    const maxAttempts = 3;
-    let lastRes = null;
-    let lastError = null;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      await scheduleRequest();
-
-      try {
-        const res = await fetch(key, { headers, signal });
-        lastRes = res;
-        lastError = null;
-
-        if (res.ok) {
-          const json = await res.json();
-          cache.set(key, { t: Date.now(), json });
-          return json;
-        }
-
-        const isRateLimit = res.status === 429;
-        const isTransient = res.status === 502 || res.status === 503 || res.status === 504;
-
-        if (signal?.aborted) break;
-
-        if ((isRateLimit || isTransient) && attempt < maxAttempts) {
-          let waitMs = 0;
-          if (isRateLimit) {
-            const retryAfterSec = Number(res.headers.get("Retry-After"));
-            waitMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ? retryAfterSec * 1000 : 1500;
-          } else {
-            waitMs = 900 * 2 ** (attempt - 1);
+  function fetchApi(endpoint, params = {}, options = {}) {
+    return new Promise((resolve, reject) => {
+      let url = `${BASE_URL}${endpoint}`;
+      
+      if (Object.keys(params).length > 0) {
+        const urlParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(params)) {
+          if (value !== undefined && value !== null && value !== '') {
+            urlParams.append(key, value);
           }
-          waitMs += Math.floor(Math.random() * 250);
-          await sleep(waitMs);
-          continue;
         }
-
-        break;
-      } catch (err) {
-        if (err?.name === "AbortError") throw err;
-        lastError = err;
-        if (attempt < maxAttempts) {
-          const waitMs = 900 * 2 ** (attempt - 1) + Math.floor(Math.random() * 250);
-          await sleep(waitMs);
-          continue;
-        }
-      }
-    }
-
-    if (!lastRes || !lastRes.ok) {
-      if (!lastRes && lastError) {
-        throw new Error("Network error while loading anime data.");
+        url += `?${urlParams.toString()}`;
       }
 
-      const status = lastRes?.status ?? 0;
-      let msg = `Request failed (${status || "network error"})`;
-      try {
-        const data = await lastRes.json();
-        if (data?.message) msg = data.message;
-      } catch {
-        // ignore
-      }
-      if (status === 429) msg = "Too many requests (429). Please wait a few seconds and try again.";
-      if (status === 504) msg = "Jikan timed out (504). Server may be overloaded—try again in a moment.";
-      throw new Error(msg);
-    }
+      requestQueue.push({
+        url,
+        options: {
+          signal: options.signal,
+          method: 'GET'
+        },
+        retries: 3,
+        resolve,
+        reject
+      });
+
+      processQueue();
+    });
   }
 
-  window.AnimeFlix.scheduleRequest = scheduleRequest;
-  window.AnimeFlix.fetchAnime = fetchAnime;
+  app.api = {
+    fetch: fetchApi
+  };
+  
+  // Map old function name to new one to avoid breaking other files immediately
+  app.fetchAnime = (endpoint, params, options) => fetchApi(endpoint, params, options);
+
 })();

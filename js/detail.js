@@ -73,8 +73,17 @@
       renderEpisodeList(lite);
       await renderVideoSource(lite, data?.data, seq);
       loadSimilarAnime(lite.mal_id, seq);
-      app.refreshFavButtons?.();
-      await app.recordAnimeVisit?.(lite, { episode: activeEpisode, incrementEpisode: false });
+      const favBtn = document.getElementById("detailsFavBtn");
+      if (favBtn) {
+        const isFav = app.storage?.isFavorite(lite.mal_id);
+        favBtn.textContent = isFav ? "Sevimlilardan olib tashlash" : "Add to favorites";
+        favBtn.onclick = () => {
+          const added = app.storage?.toggleFavorite(lite);
+          favBtn.textContent = added ? "Sevimlilardan olib tashlash" : "Add to favorites";
+          app.toast?.(added ? "Qo'shildi" : "Olib tashlandi", added ? "Sevimlilarga qo'shildi" : "Sevimlilardan olib tashlandi");
+        };
+      }
+      if (app.storage?.addHistory) app.storage.addHistory(lite, activeEpisode);
     } catch (error) {
       if (error?.name === "AbortError") return;
       renderDetailError(error?.message || "Anime tafsilotlari yuklanmadi.");
@@ -177,7 +186,7 @@
     host.innerHTML = `
       <div class="youtubePlayer">
         <iframe
-          src="https://www.youtube.com/embed/${escapeHtml(youtubeId)}"
+          src="https://www.youtube.com/embed/${escapeHtml(youtubeId)}?rel=0&modestbranding=1"
           title="${escapeHtml(title)} trailer"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
@@ -219,7 +228,8 @@
         item.classList.toggle("is-active", item === button);
       });
       updateEpisodeLabel();
-      await app.recordAnimeVisit?.(lite, { episode: activeEpisode, incrementEpisode: false });
+      if (app.storage?.addHistory) app.storage.addHistory(lite, activeEpisode);
+      if (app.storage?.addContinueWatching) app.storage.addContinueWatching(lite, activeEpisode, 10);
     };
   }
 
